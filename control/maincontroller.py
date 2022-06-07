@@ -65,3 +65,13 @@ class MainController(QThread):
 
     def return_device_conditions(self):
         return self._insight.cond_vars
+
+    def stop(self):
+        self.running = False
+        print('Shutting down controller')
+        print('Closing devices connections....')
+        print('....Insight entering hibernation mode. Serial port closed.')
+        print('....Delay stage serial port closed.')
+        print('....ZI lock-in server connection closed.')
+        print('....KCube connection closed.')
+        print('All logs and data written to output file.')

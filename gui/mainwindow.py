@@ -21,6 +21,7 @@ import time
 
 class MainWindow(QMainWindow):
     gui_changed: ClassVar[Signal] = Signal(object, str, str, str)
+    log_changed: ClassVar[Signal] = Signal(str)
     def __init__(self):
         """
         The main SRS microscope window populated with the necessary elements
@@ -203,8 +204,10 @@ class MainWindow(QMainWindow):
 
         if result == QMessageBox.Yes:
             sys.stdout = sys.__stdout__
-            with open('logs.txt', 'a') as f:
-                f.write(self._logs.toPlainText())
+            self.update_log('Shutting down.')
+            self.log_changed.emit(self._logs.toPlainText())
+            # with open('logs.txt', 'a') as f:
+            #     f.write(self._logs.toPlainText())
             event.accept()
 
     # Menubar options and actions

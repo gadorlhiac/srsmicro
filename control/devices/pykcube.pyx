@@ -2,6 +2,9 @@
 from Kcube cimport CppKcube
 
 cdef class PyKcube:
+    """The PyKcube class definition for controlling Thorlabs KCubes.
+    Minimal Cython wrapper for the cppkcube class written in C++.
+    """
     cdef CppKcube *cpp_kcube
     cdef int _pos
     cdef int _vel

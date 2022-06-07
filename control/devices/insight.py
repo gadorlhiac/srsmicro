@@ -1,41 +1,55 @@
 from .serialdevice import SerialDevice
 class Insight(SerialDevice):
-    cmds = {'d1_curr': 'READ:PLASer:DIODe1:CURRent' , # Operating current for diode 1
-            'd1_hrs': ' READ:PLASer:DIODe1:HOURS', # Operating hours for diode 1
-            'd1_temp': 'READ:PLASer:DIODe1:TEMPerature', # Diode 1 Temperature
-            'd2_curr': 'READ:PLASer:DIODe2:CURRent', # Operating current for diode 2
-            'd2_hrs': 'READ:PLASer:DIODe2:HOURS', # Operating hours for diode 2
-            'd2_temp': 'READ:PLASer:DIODe2:TEMPerature', # Diode 2 temperature
-            'dsmmax': 'CONT:SLMAX', # Maximum GVD compensation position for insight, given current wavelength
-            'dsmmin': 'CONT:SLMIN', # Minimum GVD compensation position for insight, given current wavelength
-            'dsmpos': 'CONT:DSMPOS', # The current GVD compensation position for insight
-            'fixed_shutter': 'IRSHUTter', # Open/close 1040 nm shutter
-            'main_shutter': 'SHUTter', # Open/close main (OPO) shutter
-            'opo_wl': 'WAVelength'} # OPO wavelength
+    """The Insight class for controlling the SpectraPhysics Insight DS+ femtosecond laser/OPO.
+    Extends the SerialDevice class with device specific methods and variables.
+    """
+    ## @var cmds
+    # (dict[str]:str) Dictionary reference for the write commands to retrieve or set various laser variables. Keys are the shorthand used in code.
+    cmds = {
+             'd1_curr': 'READ:PLASer:DIODe1:CURRent' , # Operating current for diode 1
+             'd1_hrs': ' READ:PLASer:DIODe1:HOURS', # Operating hours for diode 1
+             'd1_temp': 'READ:PLASer:DIODe1:TEMPerature', # Diode 1 Temperature
+             'd2_curr': 'READ:PLASer:DIODe2:CURRent', # Operating current for diode 2
+             'd2_hrs': 'READ:PLASer:DIODe2:HOURS', # Operating hours for diode 2
+             'd2_temp': 'READ:PLASer:DIODe2:TEMPerature', # Diode 2 temperature
+             'dsmmax': 'CONT:SLMAX', # Maximum GVD compensation position for insight, given current wavelength
+             'dsmmin': 'CONT:SLMIN', # Minimum GVD compensation position for insight, given current wavelength
+             'dsmpos': 'CONT:DSMPOS', # The current GVD compensation position for insight
+             'fixed_shutter': 'IRSHUTter', # Open/close 1040 nm shutter
+             'main_shutter': 'SHUTter', # Open/close main (OPO) shutter
+             'opo_wl': 'WAVelength' # OPO wavelength
+           }
     # insight_on: 'ON'
     # insight_off: 'OFF'
 
-    fault_codes = {'000': 'Normal operation.',
-                   '056': 'Fault: Hardware timeout. Notify SpectraPhysicsif it continues.',
-                   '066': 'Fault: Software timeout. Speak with system operator.',
-                   '088': 'Fault: Diode thermistor short. Contact SpectraPhysics.',
-                   '089': 'Fault: Diode thermistor open. Contact SpectraPhysics.',
-                   '090': 'Fault: Diodes too hot (T>30).  Check cooling system.',
-                   '091': 'Fault: Diodes warm (T>27).  Check cooling system.',
-                   '092': 'Fault: Diodes cold (T<17). Check cooling system.',
-                   '117': 'Fault: Internal interlock opened. Contact SpectraPhysics.',
-                   '118': 'Fault: CDRH interlock open.',
-                   '119': 'Fault: Power supply interlock. Check cable.',
-                   '120': 'Fault: Key switch interlock. Turn key.',
-                   '129': 'Fault: Very high humidity. Change purge cartridge.',
-                   '130': 'Warning: High humidity. Change purge cartridge soon.',
-                   '481': 'Fault: Slow diode ramp. Contact SpectraPhysics.',
-                   '482': 'Fault: Low fs oscillator power. Contact SpectraPhysics.',
-                   '483': 'Fault: low FTO power. Try different wavelengths. Contact SpectraPhysics.'}
+    ## @var fault_codes
+    # (dict[str]:str) Dictionary reference for numerical fault code meanings.
+    fault_codes = {
+                    '000': 'Normal operation.',
+                    '056': 'Fault: Hardware timeout. Notify SpectraPhysicsif it continues.',
+                    '066': 'Fault: Software timeout. Speak with system operator.',
+                    '088': 'Fault: Diode thermistor short. Contact SpectraPhysics.',
+                    '089': 'Fault: Diode thermistor open. Contact SpectraPhysics.',
+                    '090': 'Fault: Diodes too hot (T>30).  Check cooling system.',
+                    '091': 'Fault: Diodes warm (T>27).  Check cooling system.',
+                    '092': 'Fault: Diodes cold (T<17). Check cooling system.',
+                    '117': 'Fault: Internal interlock opened. Contact SpectraPhysics.',
+                    '118': 'Fault: CDRH interlock open.',
+                    '119': 'Fault: Power supply interlock. Check cable.',
+                    '120': 'Fault: Key switch interlock. Turn key.',
+                    '129': 'Fault: Very high humidity. Change purge cartridge.',
+                    '130': 'Warning: High humidity. Change purge cartridge soon.',
+                    '481': 'Fault: Slow diode ramp. Contact SpectraPhysics.',
+                    '482': 'Fault: Low fs oscillator power. Contact SpectraPhysics.',
+                    '483': 'Fault: low FTO power. Try different wavelengths. Contact SpectraPhysics.'
+                 }
 
     def __init__(self):
+        """! The Insight class initializer.
+        Initiliazes comport (inherited from SerialDevice) to COM6
+        """
         super().__init__()
-        # self._comport = 'COM6'
+        self.comport = 'COM6'
         # self._isconnected = False
         # self._cmd_result = ''
 
@@ -49,7 +63,7 @@ class Insight(SerialDevice):
     # Error checking
     ############################################################################
     def _read_status(self):
-        """
+        """!
         Full status including operational state, history of error codes,
         and any current error codes. Also reads values such as humidity,
         current, and diode temperature.
@@ -71,7 +85,7 @@ class Insight(SerialDevice):
         err_codes = [bool(s & mask) for mask in masks]
 
     def _read_history(self):
-        """Reads error code history from the insight startup buffer"""
+        """! Reads error code history from the insight startup buffer"""
         # Note: The Insight manual in the description of the serial commands
         # lists the history command as 'READ:HIStory?'. This is incorrect.
         # Appendix B, where the codes are explained is correct:
@@ -92,23 +106,27 @@ class Insight(SerialDevice):
 
     # Current laser status
     def _parse_op_state(self, resp: int) -> str:
-        """Return current state in text form"""
+        """! Return current state in text form.
+        @param resp (int) Numeric code corresponding to operational state of laser.
+        @return state (str) Text description of laser state.
+        """
         if resp < 25:
-            return 'Initializing'
+            state = 'Initializing'
         elif resp == 25:
-            return 'Ready to turn on'
+            state = 'Ready to turn on'
         elif resp < 50:
             return 'Turning on and/or optimizing'
         elif resp == 50:
-            return 'RUN'
+            state = 'RUN'
         elif resp < 60:
-            return 'Moving to align mode'
+            state = 'Moving to align mode'
         elif resp == 60:
-            return 'Align mode'
+            state = 'Align mode'
         elif resp < 70:
-            return 'Exiting align mode'
+            state = 'Exiting align mode'
         else:
-            return 'Reserved'
+            state = 'Reserved'
+        return state
 
     def _read_current_conditions(self):
         for cmd in self._cond_vars:
