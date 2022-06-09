@@ -1,4 +1,3 @@
-from .device import Device
 from .serialdevice import SerialDevice
 from PyQt5.QtCore import pyqtSignal as Signal
 

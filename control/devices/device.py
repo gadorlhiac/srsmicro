@@ -44,6 +44,8 @@ class Device(QObject):
         # (str) Device specific logging
         self._logs: str = ''
 
+    # Connecting and communicating
+    ############################################################################
     def open(self):
         """! Open communication with the physical device."""
         try:
@@ -114,8 +116,7 @@ class Device(QObject):
 
     @property
     def cond_vars(self):
-        """! Property for returning the device parameters and values
-        """
+        """! Property for returning the device parameters and values."""
         return self._cond_vars
 
     def return_state(self):

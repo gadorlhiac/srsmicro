@@ -3,7 +3,6 @@
 custom exception classes PositionerError and CommandError for parsing the corresponding error codes.
 """
 
-from .device import Device
 from .serialdevice import SerialDevice
 from PyQt5.QtCore import pyqtSignal as Signal
 
