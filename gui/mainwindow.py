@@ -1,34 +1,38 @@
+import sys
+import time
+import __main__
+from typing import ClassVar
+
+from .basicpanel import BasicPanel
+from .insightpanel import InsightPanel
+from .delaystagepanel import DelayStagePanel
+from .femtoramanpanel import FemtoRamanPanel
+
+from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
+from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import (QMenu, QMenuBar, QStatusBar, QMainWindow,
                              QStatusBar, QAction, QLabel, QTableWidget,
                              QTableWidgetItem, QPlainTextEdit, QWidget, QMessageBox)
-from PyQt5.QtCore import pyqtSignal as Signal
-from PyQt5.QtCore import pyqtSlot as Slot
-from PyQt5.QtCore import Qt
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
-from pyqtgraph.flowchart import Flowchart
+# from pyqtgraph.flowchart import Flowchart
 from pyqtgraph.parametertree import ParameterTree
 from pyqtgraph.parametertree.parameterTypes import ListParameter
 from pyqtgraph.console import ConsoleWidget
-from .basicpanel import BasicPanel
-from .insightpanel import InsightPanel
-from.delaystagepanel import DelayStagePanel
-import numpy as np
-import sys
-import __main__
-from typing import ClassVar
-import time
 
 class MainWindow(QMainWindow):
     gui_changed: ClassVar[Signal] = Signal(object, str, str, str)
     log_changed: ClassVar[Signal] = Signal(str)
+    data: ClassVar[Signal] = Signal(object)
+
     def __init__(self):
         """
         The main SRS microscope window populated with the necessary elements
         for various experiment types and loading of data/projects.
         """
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.setWindowTitle('SRS Microscope')
 
         # Create the central dock area for the window
@@ -137,7 +141,8 @@ class MainWindow(QMainWindow):
 
     def _update_expmt(self, obj, param, val):
         new_panels = {'Insight Controls': InsightPanel(hideTitle=True),
-                      'Delay Stage Controls': DelayStagePanel(hideTitle=True)}
+                      'Delay Stage Controls': DelayStagePanel(hideTitle=True),
+                      'fsSRS': FemtoRamanPanel(hideTitle=True)}
 
         self._expmt_tab.close()
 
@@ -147,6 +152,10 @@ class MainWindow(QMainWindow):
                                                   position = 'right',
                                                   relativeTo = self._explorer_tab)
         self._expmt_tab.expmt_msg.connect(self.update_log)
+        self.data.connect(self._expmt_tab.update)
+
+    def new_data(self, data):
+        self.data.emit(data)
 
     def parse_signal(self, ref, obj, changed, val):
         print(ref, obj, changed, val)
@@ -156,10 +165,10 @@ class MainWindow(QMainWindow):
     def _create_console_tab(self):
         self._console_tab = Dock('Console', hideTitle=True)
         self._dock_area.addDock(self._console_tab, position='bottom', relativeTo=self._explorer_tab)
-        self._console_tab.hide()
+        self._console_tab.show()
         self._console = ConsoleWidget(namespace={'self':self, 'm':__main__})
-        self._console.hide()
-        self._showconsole = False
+        self._console.show()
+        self._showconsole = True
 
         # sys.stdout = self._console
         # sys.stderr = self._console

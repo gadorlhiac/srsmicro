@@ -19,8 +19,8 @@ class SerialDevice(Device):
     """
 
     def __init__(self, name='Serial Device'):
-        """! The SerialDevice base class initializer."""
-        super(SerialDevice, self).__init__(name)
+        """! The SerialDevice base class constructor."""
+        super().__init__(name)
         ## @var _sercom
         # Serial object to manage communication.
         self._sercom = Serial(timeout=0)

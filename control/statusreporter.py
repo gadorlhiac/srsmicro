@@ -1,6 +1,6 @@
-from .devices.insight import Insight
-from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import QThread, QObject
+from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSlot as Slot
 import time
 
 class StatusReporter(QObject):
@@ -26,7 +26,6 @@ class StatusReporter(QObject):
                 device.return_state()
             if self.pause:
                 return
-
 
     def parse_status(self, name, param, val):
         # print(name, param, val)

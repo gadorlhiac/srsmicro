@@ -3,11 +3,13 @@ from .devices.delaystage import DelayStage
 from .devices.zurichlockin import ZurichLockin
 from .statusreporter import StatusReporter
 from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtCore import QThread, QObject
 import time
 
 class MainController(QObject):
     device_state = Signal(object, object, object, object)
+    new_data = Signal(object)
     log = Signal(str)
 
     def __init__(self):
@@ -31,6 +33,9 @@ class MainController(QObject):
         self._delaystage.cmd_result.connect(self._read_result)
         self._zi.cmd_result.connect(self._read_result)
         # self.cmd_result = ''
+
+        # Signal/slot connections for ZI data
+        self._zi.data.connect(self.parse_data)
 
         # Separate thread for infinite state querying at specified intervals
         self._status_thread = QThread()
@@ -65,8 +70,9 @@ class MainController(QObject):
     def _read_result(self, msg):
         self.cmd_result = msg
 
-    def emit(self):
-        pass
+    def parse_data(self, type, data):
+        if type == 'Image':
+            self.new_data.emit(data)
 
     def parse_signal(self, mw, device: str, parameter: str, val: str):
         # MainWindow emits a signal with a reference to GUI component, the device

@@ -16,11 +16,12 @@ if __name__ == '__main__':
     controller = MainController()
 
     # Signals/Slots for relaying GUI changes to controller, and device status
-    # updates back to the GUI
+    # updates and data back to the GUI
     ############################################################################
     mw.gui_changed.connect(controller.parse_signal)
     controller.log.connect(mw.update_log)
     # controller.device_state.connect(mw.parse_signal)
+    controller.new_data.connect(mw.new_data)
 
     # Data and log management
     ############################################################################

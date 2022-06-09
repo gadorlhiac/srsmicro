@@ -22,7 +22,7 @@ class Device(QObject):
 
     def __init__(self, name='Device'):
         """! The SerialDevice base class initializer."""
-        super(Device, self).__init__()
+        super().__init__()
 
         ## @var name
         # Device identifier for simplifying signal and slot operation

@@ -35,7 +35,7 @@ class DelayStage(SerialDevice):
         """! The DelayStage class initializer.
         Initiliazes comport (inherited from SerialDevice) to COM7
         """
-        super(DelayStage, self).__init__(name)
+        super().__init__(name)
         self.comport = 'COM7'
 
         ## @var _cond_vars
@@ -265,7 +265,7 @@ class CommandError(Exception):
         self.msg = self._cmd_errors[error_code]
 
     def __str__(self):
-        """! String representation of the PositionError on print
+        """! String representation of the CommandError on print
         @return (str) self.msg
         """
         return self.msg

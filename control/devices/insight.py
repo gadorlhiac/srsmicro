@@ -52,7 +52,7 @@ class Insight(SerialDevice):
         """! The Insight class initializer.
         Initiliazes comport (inherited from SerialDevice) to COM6
         """
-        super(Insight, self).__init__(name)
+        super().__init__(name)
         self.comport = 'COM6'
         # self._isconnected = False
         # self._cmd_result = ''
@@ -63,7 +63,7 @@ class Insight(SerialDevice):
         self._fixed_shutter = 0
 
         self._cond_vars = dict.fromkeys(Insight.cmds.keys(), '-')
-        self.name = name
+        # self.name = name
 
     # Error checking
     ############################################################################

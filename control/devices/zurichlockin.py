@@ -1,7 +1,9 @@
 from .device import Device
+from .zurichdaq import ZurichDaq
 import zhinst.ziPython as ziPython
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QThread
 from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSlot as Slot
 
 # For simplicity, use the same names as serial devices
 # Need _cond_vars
@@ -16,204 +18,183 @@ class ZurichLockin(Device):
     simplicity, and reproducibility, ZI API calls are handled behind the scenes,
     so the end user experience mimics using the SerialDevice class.
     """
-    daqData = Signal(object)
+    data = Signal(object, object)
 
     def __init__(self, name='Lockin'):
         """! The ZurichLockin base class initializer."""
-        super(ZurichLockin, self).__init__(name)
-
-        # Defined in Device constructor
-        # self.name: str = name
-        # self._cond_vars {}
+        super().__init__(name)
 
         ## @var _devname
         # Actual hardware device name for internal use with the server API
         self._devname: str = ''
+        self._cond_vars['dwell'] = 1e-5
 
-
-        # Reconstruct in the _cond_vars dictionary for public access
-        # # self._name = ''
-        # # self._scope = []
-        # # self._settings = {}
-        #
-        # self._daq = None
-        #
-        # self._sigin = 0
-        # self._sigout = 0
-        # self._scope_time = 1
-        #
-        # self._tc = 0
-        # self._freq = 0
-        # self._rate = 0
-
-        # try:
-        #     port, apilevel = self._discover()
-        #     self.server = ziPython.ziDAQServer('localhost', port, apilevel)
-        #     self.server.connect()
-        #
-        #     msg = self._load_settings()
-        #     self.server.set(self._settings['server'])
-        #     self.server.sync()
-        #
-        #     self._get_config()
-        #
-        #     self._daq = self.server.dataAcquisitionModule()
-        #
-        #     self.cmd_result.emit('Lockin found {}'.formt(msg))
-        # except Exception as e:
-        #     self.cmd_result.emit(str(e))
-
-    # Lockin discovery and initiliazation functions
+    # Lockin discovery and configuration functions
     ############################################################################
-
     def _open(self):
-        # try:
-        # port, apilevel = self._discover()
-        print(port, apilevel)
-        self.server = ziPython.ziDAQServer('localhost', port, apilevel)
-        self.server.connect()
-
-            # msg = self._load_settings()
-            # self.server.set(self._settings['server'])
-            # self.server.sync()
-            #
-            # self._get_config()
-            #
-            # self._daq = self.server.dataAcquisitionModule()
-
-            # self.cmd_result.emit('Lockin found {}'.formt(msg))
-        # except Exception as err:
-        #     self.cmd_result.emit(str(e))
-
-    def _discover(self) -> list[int, int]:
-        """! Run API discovery routines, and return port and apilevel to allow
-        connection
-        @return [port, apilevel] (list[int, int]) List of the port and apilevel.
+        """! Run the ZI API discovery routine and attempt to start the lock-in
+        amplifier server.
         """
-        # try:
-        disc = ziPython.ziDiscovery()
-        device = disc.findAll()[0]
-        dev_info = disc.get(device)
-        port = dev_info['serverport']
-        apilevel = dev_info['apilevel']
-        self._name = dev_info['deviceid'].lower()
-        self.cmd_result = 'Lock-in found'
-        return port, apilevel
+        # It is required to construct an instance of the discovery class
+        discovery = ziPython.ziDiscovery()
+        devs = discovery.findAll()
+        if len(devs) == 0:
+            raise(DeviceNotFound('No lockin detected. Is everything plugged in?'))
+        else:
+            dev = devs[0]
+            info = discovery.get(dev)
+            port = info['serverport']
+            apilevel = info['apilevel']
+            self._devname = info['deviceid'].lower()
+            self._server = ziPython.ziDAQServer('localhost', port, apilevel)
+            self._server.connect()
 
-        # except Exception as e:
-        #     self.last_action = 'Lock-in not found. %s' % (str(e))
-        #     return 8005, 1
+            # Use external clock
+            self._server.set([['/{}/system/extclk'.format(self._devname), 1]])
+            self._server.sync()
+            self._enable_demod()
+            self._configure_sigin()
+            self._daq = ZurichDaq(self._server.dataAcquisitionModule(),
+                        self._devname, '/{}/demods/0/sample'.format(self._devname))
+            self._daq.data.connect(self._image_data)
 
-    def _load_settings(self) -> str:
+    def _enable_demod(self, demod=0, sigin=0, freq=1.028e7, harm=1, tc=3e-6,
+                                                    order=4, osc=0, rate=100000):
+        """! Enable a demodulator for signal processing.
+        @param demod (int) Index of demodulator, [0, 5]. Default: 0
+        @param sigin (int) Index of signal input, [0, 5]. Default: 0 (Signal In 1)
+        @param freq (float) Demodulation frequency (Hz). Default: 10280000
+        @param harm (int) Demodulation harmonic. Default: 1
+        @param tc (float) Lock-in time constant in seconds. Default: 3e-6
+        @param order (int) Low-pass filter order [1,8]. Default 4 (24 dB/oct slope)
+        @param osc (int) Oscillator to use 0 or 1. Default 0
+        @param rate (int) Data transfer rate (Hz), may be approximated by LIA. Default: 10000 (>2 samples/pixel at 512 pixels with dwell=tc)
         """
-        Try to load settings for oscillator/demodulator/server.
-        Default settings hard coded if not found.
+        # Demodulator parameter settings
+        parameters = [['/{}/demods/{}/enable'.format(self._devname, demod), 1],
+                      ['/{}/demods/{}/adcselect'.format(self._devname, demod), sigin],
+                      ['/{}/demods/{}/harmonic'.format(self._devname, demod), harm],
+                      ['/{}/demods/{}/timeconstant'.format(self._devname, demod), tc],
+                      ['/{}/demods/{}/order'.format(self._devname, demod), order],
+                      ['/{}/demods/{}/oscselect'.format(self._devname, demod), 0],
+                      ['/{}/demods/{}/rate'.format(self._devname, demod), rate]]
+
+        # Push settings to lock-in
+        self._server.set(parameters)
+        self._server.sync()
+
+        # Set oscillator parameters
+        # Note: documentation may indicate that demods has a frequency parameter
+        # but it doesn't. Set it in the oscillator
+        parameters = [['/{}/oscs/{}/freq'.format(self._devname, osc), freq]]
+
+        # Push settings to lock-in
+        self._server.set(parameters)
+        self._server.sync()
+
+        # Update object copy of parameters and logs
+        self._cond_vars['demod{}'.format(demod)] = { 'enable' : 1,
+                                                     'sigin' : sigin,
+                                                     'harmonic' : harm,
+                                                     'tc' : tc,
+                                                     'order' : order,
+                                                     'oscillator' : 0,
+                                                     'rate': rate }
+        self._cond_vars['osc{}'.format(osc)] ={ 'freq' : freq }
+
+        self._logs += '{} Demodulator {} using:\n'.format(self.current_time, demod)
+        for param in self._cond_vars['demod{}'.format(demod)]:
+            self._logs += '{}: {}\n'.format(param, self._cond_vars['demod{}'.format(demod)][param])
+
+        self._logs += 'Oscillator {} using:\n'.format(osc)
+        self._logs += '{}: {}\n'.format('freq', freq)
+
+    def _configure_sigin(self, sigin=0, ac=1, i50=1, diff=0, range=.01):
+        """! Configure signal in parameters.
+        @param sigin (int) Index of signal input to configure. Default: 0
+        @param ac (int) Whether to enable AC coupling. Default: 1 (Enable)
+        @param i50 (int) Whether input impedance is set to 50 ohm. Default: 1 (Yes)
+        @param diff (int) Whether using differential input. Default: 0 (No)
+        @param range (float) Voltage range of signal in V (0.0001). Default: 0.01
         """
-        try:
-            with open('calibration/lockin.yaml') as f:
-                tmp = ''
-                for line in f:
-                    tmp += line
-                settings = yaml.load(tmp)
-            msg = 'settings loaded'
-        except FileNotFoundError as e:
-            msg = 'using default settings'
-            self._settings['server'] = [['/%s/demods/*/enable' % (self._name), 0],
-                                        ['/%s/demods/*/trigger' % (self._name), 0],
-                                        ['/%s/sigouts/*/enables/*' % (self._name), 0],
-                                        ['/%s/scopes/*/enable' % (self._name), 0],
+        # Signal input parameter settings
+        sig_set = [['/{}/sigins/{}/ac'.format(self._devname, sigin), ac],
+                   ['/{}/sigins/{}/imp50'.format(self._devname, sigin), i50],
+                   ['/{}/sigins/{}/diff'.format(self._devname, sigin), diff],
+                   ['/{}/sigins/{}/range'.format(self._devname, sigin), range]]
 
-                                        ['/%s/sigins/%d/ac' % (self._name, self._sigin), 1],
-                                        ['/%s/sigins/%d/imp50' % (self._name, self._sigin), 1],
-                                        ['/%s/sigins/%d/diff' % (self._name, self._sigin), 0],
+        # Push settings to lock-in
+        self._server.set(sig_set)
+        self._server.sync()
 
-                                        ['/%s/demods/0/enable' % (self._name), 1],
-                                        ['/%s/demods/0/adcselect' % (self._name), self._sigin],
-                                        ['/%s/demods/0/order' % (self._name), 4],
-                                        ['/%s/demods/0/timeconstant' % (self._name), 2e-5],
-                                        ['/%s/demods/0/rate' % (self._name), 2e5],
-                                        ['/%s/demods/0/oscselect' % (self._name), 0],
-                                        ['/%s/demods/0/harmonic' % (self._name), 1],
-                                        ['/%s/oscs/0/freq' % (self._name), 10280000]]
-        finally:
-            return msg
+        # Update object copy of parameters and logs
+        self._cond_vars['sigin{}'.format(sigin)] = { 'enable' : 1,
+                                                     'ac' : ac,
+                                                     'imp50' : i50,
+                                                     'diff' : diff,
+                                                     'range' : range}
+
+
+        self._logs += '{} Configured input {} using:\n'.format(self.current_time, sigin)
+        for param in self._cond_vars['sigin{}'.format(sigin)]:
+            self._logs += '{}: {}'.format(param, self._cond_vars['sigin{}'.format(sigin)][param])
+
+
+    def _configure_sigout(self, sigout=0, on=1, add=0, range=10):
+        """! Configure signal out parameters. Defaults to beginning output, so
+        should only be called to begin output, or then to disable it afterwards.
+        @param sigout (int) Index of signal output to configure. Default: 0
+        @param on (int) Toggle signal output on or off. Default: 1 (On)
+        @param add (int) Toggle the signal adder on or off. Default: 0 (Off)
+        @param range (float) Output range [0.01, 0.1, 1, 10]. Default: 10
+        """
+        sig_set = [['/{}/sigouts/{}/on'.format(self._devname, sigout), on],
+                   ['/{}/sigouts/{}/add'.format(self._devname, sigout), add],
+                   ['/{}/sigouts/{}/range'.format(self._devname, sigout), range]]
+        self._server.set(sig_set)
+        self._server.sync()
 
     def _get_config(self):
+        """! Return current lock-in parameter configuration.
+        @todo Define scope of return from tree hierarchy (i.e. which node to start at)
+        @todo Parse dictionary to more readable form
+        @todo Actually implement above. Add to logs? Or have a separate output?
         """
-        Get the current lockin oscillator frequency, demodulator time constant
-        and sampling rate of the demodulated signal.
-        """
-        try:
-            self._tc = self.server.getDouble('/%s/demods/0/timeconstant' % (self._name))
-            self._rate = self.server.getDouble('/%s/demods/0/rate' % (self._name))
-            self._freq = self.server.getDouble('/%s/oscs/0/freq' % (self._name))
-        except Exception as e:
-            self.last_action = str(e)
+        pass
 
+    # DAQ management (Imaging)
     ############################################################################
-    # Data acquisition module for imaging
+    def start_daq(self):
+        self._daqthread = QThread()
+        self._daq.moveToThread(self._daqthread)
+        self._daqthread.started.connect(self._daq.start)
+        self._daqthread.start()
 
-    def start_daq(self, imsize, dwell, num_frames=0):
-        # imsize (rows, cols)
-        path = '/%s/demods/0/sample' % (self._name)
-        try:
-            self._daq.set(self._settings['daq'])
-        except KeyError:
-            self._settings['daq'] = [['dataAcquisitionModule/device', self._name],
-                                     ['dataAcquisitionModule/type', 1], # edge trigger
-                                     ['dataAcquisitionModule/triggernode', '%s.auxin1' % (path)],
-                                     ['dataAcquisitionModule/edge', 1], # positive edge
-                                     ['dataAcquisitionModule/level', 2.5],
-                                     ['dataAcquisitionModule/duration', dwell*imsize[1]],
-                                     ['dataAcquisitionModule/delay', 0],
+    def stop_daq(self):
+        self._daq.stop = True
 
-                                     ['dataAcquisitionModule/grid/mode', 2], # linear interpolation
-                                     ['dataAcquisitionModule/grid/repetitions', 1],
-                                     ['dataAcquisitionModule/grid/rows', imsize[0]],
-                                     ['dataAcquisitionModule/grid/cols', imsize[1]],
-                                     ['dataAcquisitionModule/grid/direction', 0],
+    # def create_daq(self, path: str) -> (QThread, ZurichDaq):
+    #     path = '/{}/demods/0/sample.r'
+    #     self._daqthread = QThread()
+    #     self._daq = self._server.dataAcquisitionModule()
+    #     self._daq.moveToThread(_daqthread)
+    #     self._daqthread.start()
+        # return _daqthread, _daq
 
-                                     ['dataAcquisitionModule/refreshrate', 200],
+    def _image_data(self, data):
+        self.data.emit('Image', data)
 
-                                     ['dataAcquisitionModule/delay', 0],
-                                     ['dataAcquisitionModule/holdoff/time', 0],
-                                     ['dataAcquisitionModule/holdoff/count', 0]]
-            if num_frames:
-                self._settings['daq'].append(['dataAcquisitionModule/count', num_frames])
-            else:
-                self._settings['daq'].append(['dataAcquisitionModule/endless', True])
-            self._daq.set(self._settings['daq'])
-        finally:
-            self._daq.subscribe('%s.r' % (path))
-            self._daq.execute()
-
-    def read_daq():
-        read = '/%s/demods/0/sample' % (self._name)
-        while not self._daq.finished():
-            try:
-                read = self._daq.read(True)
-                data = np.zeros([512, 512])
-                # Can return multiple frames, but right now only care about most
-                # recent
-                num_frames = len(read['%s.r' % (path)])
-                for i in range(num_frames):
-                    flags = read['%s.r' % (path)][i]['header']['flags']
-                    if flags & 1:
-                        data = np.array(read['%s.r' % (path)][i]['value'])
-                        self.daqData.emit(data)
-            except KeyError:
-                pass
+    # def read_daq():
+    #     pass
 
     @property
     def acquiring(self):
         return not self._daq.finished()
 
+    # Polling without DAQ module
     ############################################################################
-    # Polling functions for data retrieval.
-
-    def _poll(self, poll_length=0.05, timeout=500, tc=1e-3):
-        """
-        Poll the demodulator and record the data.
+    def _poll(self, demod, sigin, poll_length=0.05, timeout=500, tc=1e-3):
+        """! Poll a demodulator and record the data.
 
         Args:
             poll_length (float): how long to poll. Units: (s)
@@ -227,7 +208,7 @@ class ZurichLockin(Device):
             line (np array): auxilary in 1 values. Currently configured to olympus line clock.
         """
         flat_dictionary_key = True
-        path = '/%s/demods/0' % (self._name)
+        path = '/%s/DEMODS/0' % (self._name)
 
         self.server.setDouble('%s/timeconstant' % (path), tc)
         self.server.sync()
@@ -268,20 +249,33 @@ class ZurichLockin(Device):
         except Exception as e:
             self.last_action = str(e)
 
+    # Oscilloscope module
     ############################################################################
-    # API errors
+    @property
+    def scope(self):
+        """Return the oscilloscope trace."""
+        return self._scope
 
-    def _check_api_errors(self):
-        """Check if any API errors were found"""
+    @property
+    def scope_time(self):
+        return self._scope_time
+
+    @scope_time.setter
+    def scope_time(self, val):
         try:
-            e = self.server.getLastError()
-            if e != '':
-                raise APIError(self._api_error)
+            if val > 15:
+                scope_time = 15
+            else:
+                scope_time = val
+            clockbase = float(self.server.getInt('/%s/clockbase' % (self._name)))
+            self.server.set(['/%s/scopes/0/time' % (device), scope_time])
+            self.last_action = 'Oscilloscope time set to %i' % (val)
+            #desired_t_shot = 10./frequency
+            #scope_time = np.ceil(np.max([0, np.log2(clockbase*desired_t_shot/2048.)]))
+        except:
+            self.last_action = ''
 
-        except APIError as e:
-            self._api_error = str(msg)
-            self.last_action = str(msg)
-
+    # Parameter setting/getting
     ############################################################################
     # Property and setter functions for lockin time constant, modulation
     # frequency and sampling rate
@@ -300,10 +294,10 @@ class ZurichLockin(Device):
         Args:
             val (float): demodulator time constant. Units (s)
         """
-        self.server.setDouble('/%s/demods/0/timeconstant' % (self._name), val)
+        self.server.setDouble('/%s/DEMODS/0/timeconstant' % (self._name), val)
         self.server.sync()
 
-        self._tc = self.server.getDouble('/%s/demods/0/timeconstant' % (self._name))
+        self._tc = self.server.getDouble('/%s/DEMODS/0/timeconstant' % (self._name))
         self.last_action = 'Lockin time constant set to %i' % (self._tc)
 
     # Lockin oscillator frequency
@@ -340,87 +334,82 @@ class ZurichLockin(Device):
         Args:
             val (float): sampling rate of demodulated signal. Units (Sa/s)
         """
-        self.server.setDouble('/%s/demods/0/rate' % (self._name), val)
+        self.server.setDouble('/%s/DEMODS/0/rate' % (self._name), val)
         self.server.sync()
 
-        self._rate = self.server.getDouble('/%s/demods/0/rate' % (self._name))
+        self._rate = self.server.getDouble('/%s/DEMODS/0/rate' % (self._name))
         self.last_action = 'Lockin sampling rate set to %i' % (self._rate)
 
 
     ############################################################################
     # Property and setter functions for signal input/outputs
 
-    @property
-    def sigin(self):
-        """Return current signal input channel.  Not in use."""
-        return self._sigin
-
-    @sigin.setter
-    def sigin(self, val):
-        """Set current signal input channel. Not in use."""
-        self._sigin = val
-        self.last_action = 'Signal input changed to channel %d.' % (val+1)
-
-    @property
-    def sigout(self):
-        """Return current signal output channel.  Not in use."""
-        return self._sigout
-
-    @sigout.setter
-    def sigout(self, val):
-        """Set current signal output channel. Not in use."""
-        self._sigout = val
-        self.last_action = 'Signal output changed to channel %d.' % (val+1)
+    # @property
+    # def sigin(self):
+    #     """Return current signal input channel.  Not in use."""
+    #     return self._sigin
+    #
+    # @sigin.setter
+    # def sigin(self, val):
+    #     """Set current signal input channel. Not in use."""
+    #     self._sigin = val
+    #     self.last_action = 'Signal input changed to channel %d.' % (val+1)
+    #
+    # @property
+    # def sigout(self):
+    #     """Return current signal output channel.  Not in use."""
+    #     return self._sigout
+    #
+    # @sigout.setter
+    # def sigout(self, val):
+    #     """Set current signal output channel. Not in use."""
+    #     self._sigout = val
+    #     self.last_action = 'Signal output changed to channel %d.' % (val+1)
 
     ############################################################################
-    # Oscilloscope properties
+    # API errors
 
-    @property
-    def scope(self):
-        """Return the oscilloscope trace."""
-        return self._scope
+    # Flag and API error management
+    ############################################################################
+    # /dev1292/status/flags
 
-    @property
-    def scope_time(self):
-        return self._scope_time
-
-    @scope_time.setter
-    def scope_time(self, val):
+    def _check_api_errors(self):
+        """Check if any API errors were found"""
         try:
-            if val > 15:
-                scope_time = 15
-            else:
-                scope_time = val
-            clockbase = float(self.server.getInt('/%s/clockbase' % (self._name)))
-            self.server.set(['/%s/scopes/0/time' % (device), scope_time])
-            self.last_action = 'Oscilloscope time set to %i' % (val)
-            #desired_t_shot = 10./frequency
-            #scope_time = np.ceil(np.max([0, np.log2(clockbase*desired_t_shot/2048.)]))
-        except:
-            self.last_action = ''
+            e = self.server.getLastError()
+            if e != '':
+                raise APIError(self._api_error)
 
-    # Properties for setting values and retrieving results
-    ############################################################################
-    @property
-    def cmd_result(self):
-        """! Property for the private _cmd_result
-        @return _cmd_result (str) The last message read from the device.
+        except APIError as e:
+            self._api_error = str(msg)
+            self.last_action = str(msg)
+
+# Exception error classes
+############################################################################
+class DeviceNotFound(Exception):
+    """Exception class when unable to find Lockin devices connected."""
+    def __init__(self, msg):
+        """! DeviceNotFound class initializer.
+        @param msg (str) Additional message to include.
         """
-        return self._cmd_result
+        self.msg = msg
 
-    @cmd_result.setter
-    def cmd_result(self, val):
-        """! Property setter for the command result.
-        @param val (str) String to set the command result to. Intended to hold
-        description of the last action taken, e.g. setting a parameter such as the
-        COM port, or a device specific error message.
+    def __str__(self):
+        """! String representation of the PositionError on print
+        @return (str) self.msg
         """
-        self._cmd_result = val
+        return self.msg
 
+class APIError(Exception):
+    """Exception class for errors due to ZI API"""
+    def __init__(self, msg):
+        """! APIError class initializer.
+        @param msg (str) Additional message to include.
+        """
+        self.msg = msg
 
-# class APIError(Exception):
-#     def __init__(self, error):
-#         self.msg = error
-#
-#     def __str__(self):
-#         return self.msg
+    def __str__(self):
+        """! String representation of the PositionError on print
+        @return (str) self.msg
+        """
+        return 'APIError: {}'.format(self.msg)
