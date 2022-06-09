@@ -106,13 +106,13 @@ class Device(QObject):
             if type(val) != float:
                 raise TypeError('Communication wait time must be float.')
             self._comtime = val
-            self.cmd_result = 'Communication wait time set to: {}'.format(val)
+            self.cmd_result.emit('Communication wait time set to: {}'.format(val))
 
         except TypeError as err:
-            self.cmd_result = 'Communication time not changed. {}'.format(str(err))
+            self.cmd_result.emit('Communication time not changed. {}'.format(str(err)))
 
         except Exception as err:
-            self.cmd_result = 'Communication wait time not changed. Error: {}'.format(str(err))
+            self.cmd_result.emit('Communication wait time not changed. Error: {}'.format(str(err)))
 
     @property
     def cond_vars(self):
