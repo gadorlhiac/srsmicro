@@ -13,6 +13,7 @@ from pyqtgraph.parametertree.parameterTypes import ListParameter
 from pyqtgraph.console import ConsoleWidget
 from .basicpanel import BasicPanel
 from .insightpanel import InsightPanel
+from.delaystagepanel import DelayStagePanel
 import numpy as np
 import sys
 import __main__
@@ -135,7 +136,8 @@ class MainWindow(QMainWindow):
         self._expmt_tab.expmt_msg.connect(self.update_log)
 
     def _update_expmt(self, obj, param, val):
-        new_panels = {'Insight Controls': InsightPanel(hideTitle=True)}
+        new_panels = {'Insight Controls': InsightPanel(hideTitle=True),
+                      'Delay Stage Controls': DelayStagePanel(hideTitle=True)}
 
         self._expmt_tab.close()
 
@@ -159,8 +161,8 @@ class MainWindow(QMainWindow):
         self._console.hide()
         self._showconsole = False
 
-        sys.stdout = self._console
-        sys.stderr = self._console
+        # sys.stdout = self._console
+        # sys.stderr = self._console
         self._console_tab.addWidget(self._console)
 
     def _toggleconsole(self):
@@ -179,6 +181,9 @@ class MainWindow(QMainWindow):
         parameter = str(obj).split('\'')[1]
         self.gui_changed.emit(self, 'global', parameter, str(val))
         self.update_log('{} changed to {}'.format(parameter, str(val)))
+
+    def expmt_changed(self, obj, param, val):
+        pass
 
     # Logging and status bar
     ############################################################################

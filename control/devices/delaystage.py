@@ -3,7 +3,9 @@
 custom exception classes PositionerError and CommandError for parsing the corresponding error codes.
 """
 
+from .device import Device
 from .serialdevice import SerialDevice
+from PyQt5.QtCore import pyqtSignal as Signal
 
 class DelayStage(SerialDevice):
     """The DelayStage class for controlling the Newport FCL200 delay stage.
@@ -28,11 +30,13 @@ class DelayStage(SerialDevice):
                           '3C' : 'DISABLE from READY.',
                           '3D' : 'DISABLE from MOVING.' }
 
-    def __init__(self):
+    # cmd_result = Signal(str)
+
+    def __init__(self, name='Delay Stage'):
         """! The DelayStage class initializer.
         Initiliazes comport (inherited from SerialDevice) to COM7
         """
-        super().__init__()
+        super(DelayStage, self).__init__(name)
         self.comport = 'COM7'
 
         ## @var _cond_vars
@@ -59,10 +63,11 @@ class DelayStage(SerialDevice):
                 raise CommandError(resp)
 
         except CommandError as e:
-                    self.cmd_result = 'Command error: {}'.format(str(e))
-
+                    # self.cmd_result = 'Command error: {}'.format(str(e))
+            pass
         except Exception as e:
-            self.cmd_result = 'Error: {}'.format(str(e))
+            # self.cmd_result = 'Error: {}'.format(str(e))
+            pass
 
     def _query_state(self):
         """! Query device state and parse any positioner errors.
@@ -88,14 +93,20 @@ class DelayStage(SerialDevice):
             if '1' in bin_repr:
                 raise PoisionerError(bin_repr)
 
-            self.cmd_result = 'Read state and checked for positioner errors.'
+            # self.cmd_result = 'Read state and checked for positioner errors.'
 
         except PositionerError as e:
             self._cond_vars['pos_err'] = str(e)
-            self.cmd_result = 'Positioner error: {}'.format(str(e))
+            # self.cmd_result = 'Positioner error: {}'.format(str(e))
+            self.cmd_result.emit('Positioner error: {}'.format(str(e)))
 
         except Exception as e:
-            self.cmd_result = 'Error: {}'.format(str(e))
+            # self.cmd_result = 'Error: {}'.format(str(e))
+            self.cmd_result.emit('Error: {}'.format(str(e)))
+            pass
+
+    # def return_state(self):
+    #     pass
 
     # def _read_status(self):
     # """!
@@ -140,7 +151,8 @@ class DelayStage(SerialDevice):
             # Move to the new position, using the time calculated above as the amount
             # of time to wait/block further communication.
             self.write(b'1PR{:.4f}'.format(val), t + self.comtime)
-            self.cmd_result = self.read()
+            # self.cmd_result = self.read()
+            self.cmd_result.emit(self.read())
 
             # Perform error checking
             self.check_errors()
@@ -151,7 +163,8 @@ class DelayStage(SerialDevice):
             self._cond_vars['pos'] = self.read()[3:]
 
         except Exception as err:
-            self.cmd_result = 'Delay stage not moved. {}'.format(str(err))
+            # self.cmd_result = 'Delay stage not moved. {}'.format(str(err))
+            self.cmd_result.emit('Delay stage not moved. {}'.format(str(err)))
 
     def _move_absolute(self, val):
         """! Move the stage to a new absolute position.
@@ -169,7 +182,8 @@ class DelayStage(SerialDevice):
             self._move_relative(rel_mov)
 
         except Exception as err:
-            self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
+            # self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
+            self.cmd_result.emit('Delay stage not moved. {}.'.format(str(err)))
 
 # PositionerError
 ################################################################################
@@ -179,22 +193,22 @@ class PositionerError(Exception):
     """
     ## @var _pos_errors
     # (list[str]:str) String definitions for given integer error codes. The definition is returned by using the error code as the index on the list.
-    _pos_errors = np.array(['Not used.',
-                            'Not used.',
-                            'Not used.',
-                            'Not used.',
-                            'Driver overheating.',
-                            'Driver fault.',
-                            'Not used.',
-                            'Not used.',
-                            'No parameters in memory.',
-                            'Homing time out.',
-                            'Not used.',
-                            'Newport reserved.',
-                            'RMS current limit.',
-                            'Not used.',
-                            'Positive end of run.',
-                            'Negative end of run.'])
+    _pos_errors = ['Not used.',
+                   'Not used.',
+                   'Not used.',
+                   'Not used.',
+                   'Driver overheating.',
+                   'Driver fault.',
+                   'Not used.',
+                   'Not used.',
+                   'No parameters in memory.',
+                   'Homing time out.',
+                   'Not used.',
+                   'Newport reserved.',
+                   'RMS current limit.',
+                   'Not used.',
+                   'Positive end of run.',
+                   'Negative end of run.']
 
     def __init__(self, error_code):
         """! PositionError class initializer.

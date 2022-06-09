@@ -1,8 +1,14 @@
 from .devices.insight import Insight
+from .devices.delaystage import DelayStage
+from .devices.zurichlockin import ZurichLockin
+from .statusreporter import StatusReporter
 from PyQt5.QtCore import pyqtSignal as Signal
-from PyQt5.QtCore import QThread
-class MainController(QThread):
+from PyQt5.QtCore import QThread, QObject
+import time
+
+class MainController(QObject):
     device_state = Signal(object, object, object, object)
+    log = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -13,21 +19,58 @@ class MainController(QThread):
         # Physical connection status and error handling due to unavailability
         # is handeled by the device itself.
 
-        self._insight = Insight()
-        # self._delaystage = DelayStage()
+        # Create instances of all devices
+        self._insight = Insight(name='Insight')
+        self._delaystage = DelayStage(name='Delay Stage')
+        self._zi = ZurichLockin(name='Lockin')
         # self._zi = ZurichInstruments()
         # self._kcube = PyKCube()
         # self._dmd = DMD()
 
-        # One signal emitted from main gui which is then parsed here
-        # self._mw.gui_changed.connect(self.parse_signal)
+        self._insight.cmd_result.connect(self._read_result)
+        self._delaystage.cmd_result.connect(self._read_result)
+        self._zi.cmd_result.connect(self._read_result)
+        # self.cmd_result = ''
 
-        # self._mw.update_dev_conds(['Insight'], len(self._insight.cond_vars),
-        #                           self._insight.cond_vars)
+        # Separate thread for infinite state querying at specified intervals
+        self._status_thread = QThread()
+        self._reporter = StatusReporter([self._insight])
+        self._reporter.moveToThread(self._status_thread)
+        self._status_thread.started.connect(self._reporter.query_state)
+
+        # Cleanup on shutdown
+        self._reporter.shutdown.connect(self._status_thread.quit)
+        self._reporter.shutdown.connect(self._reporter.deleteLater)
+        self._status_thread.finished.connect(self._status_thread.deleteLater)
+
+        # Start the query thread
+        self._status_thread.start()
+
+    def init_devices(self):
+        msg = 'Opening communication with Insight....\n\t\t'
+        self._insight.open()
+        msg += self.cmd_result
+        self.log.emit(msg)
+
+        msg = 'Opening communication with the Delay Stage....\n\t\t'
+        self._delaystage.open()
+        msg += self.cmd_result
+        self.log.emit(msg)
+
+        msg = 'Opening communication with the Lockin....\n\t\t'
+        self._zi.open()
+        msg += self.cmd_result
+        self.log.emit(msg)
+
+    def _read_result(self, msg):
+        self.cmd_result = msg
+
+    def emit(self):
+        pass
 
     def parse_signal(self, mw, device: str, parameter: str, val: str):
-        # MainWindow emits a signal with a reference to itself, the device to
-        # communicate with, the parameter affected, and the value to input
+        # MainWindow emits a signal with a reference to GUI component, the device
+        # to communicate with, the parameter affected, and the value to input
         # MainWindow refernce is passed in order to communicate back the
         # response from the device
         # Each device case is handled by separate function
@@ -69,6 +112,8 @@ class MainController(QThread):
     def stop(self):
         self.running = False
         print('Shutting down controller')
+        print('....Exiting device status thread')
+        self._status_thread.quit()
         print('Closing devices connections....')
         print('....Insight entering hibernation mode. Serial port closed.')
         print('....Delay stage serial port closed.')

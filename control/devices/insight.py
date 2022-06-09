@@ -1,4 +1,7 @@
+from .device import Device
 from .serialdevice import SerialDevice
+from PyQt5.QtCore import pyqtSignal as Signal
+
 class Insight(SerialDevice):
     """The Insight class for controlling the SpectraPhysics Insight DS+ femtosecond laser/OPO.
     Extends the SerialDevice class with device specific methods and variables.
@@ -44,11 +47,13 @@ class Insight(SerialDevice):
                     '483': 'Fault: low FTO power. Try different wavelengths. Contact SpectraPhysics.'
                  }
 
-    def __init__(self):
+    # cmd_result = Signal(str)
+
+    def __init__(self, name='Insight'):
         """! The Insight class initializer.
         Initiliazes comport (inherited from SerialDevice) to COM6
         """
-        super().__init__()
+        super(Insight, self).__init__(name)
         self.comport = 'COM6'
         # self._isconnected = False
         # self._cmd_result = ''
@@ -59,6 +64,7 @@ class Insight(SerialDevice):
         self._fixed_shutter = 0
 
         self._cond_vars = dict.fromkeys(Insight.cmds.keys(), '-')
+        self.name = name
 
     # Error checking
     ############################################################################
@@ -98,7 +104,7 @@ class Insight(SerialDevice):
                 history += '{}: {}\n'.format(code, self.fault_codes[code])
 
             self._status['history'] = history
-            self.last_action = 'Read from history buffer.'
+            # self.cmd_result = 'Read from history buffer. Appended to logs.'
         except Exception as e:
             err = 'Error while reading history: {}'.format(str(e))
             self._status['history'] = err
@@ -136,3 +142,6 @@ class Insight(SerialDevice):
     @property
     def cond_vars(self) -> dict:
         return self._cond_vars
+
+    # def return_state(self):
+    #     pass

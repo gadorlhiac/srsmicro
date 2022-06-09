@@ -1,74 +1,108 @@
-#! /usr/bin/env python
-
-import numpy as np
-import time
+from .device import Device
 import zhinst.ziPython as ziPython
-import yaml
-from AnyQt.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSignal as Signal
 
-class APIError(Exception):
-    def __init__(self, error):
-        self.msg = error
+# For simplicity, use the same names as serial devices
+# Need _cond_vars
+# Need _logs and logs
+# Need cmd_result
+# Need name, this will be different than the name used by the server API
 
-    def __str__(self):
-        return self.msg
+class ZurichLockin(Device):
+    """The base class for the ZI HFL2I lock-in amplifier.
 
-class ziDAQ(QObject):
+    Uses a separate server for communication through ZI's provided API. For
+    simplicity, and reproducibility, ZI API calls are handled behind the scenes,
+    so the end user experience mimics using the SerialDevice class.
     """
-    Facilitates control of the ZI HFL2I lockin amplifier.  Uses the server API.
-    """
-    daqData = pyqtSignal(np.ndarray)
-    def __init__(self):
-        QObject.__init__(self)
-        self._name = ''
-        self._scope = []
-        self._settings = {}
+    daqData = Signal(object)
 
-        self._daq = None
+    def __init__(self, name='Lockin'):
+        """! The ZurichLockin base class initializer."""
+        super(ZurichLockin, self).__init__(name)
 
-        self._sigin = 0
-        self._sigout = 0
-        self._scope_time = 1
+        # Defined in Device constructor
+        # self.name: str = name
+        # self._cond_vars {}
 
-        self._tc = 0
-        self._freq = 0
-        self._rate = 0
+        ## @var _devname
+        # Actual hardware device name for internal use with the server API
+        self._devname: str = ''
 
-        try:
-            port, apilevel = self._discover()
-            self.server = ziPython.ziDAQServer('localhost', port, apilevel)
-            self.server.connect()
 
-            msg = self._load_settings()
-            self.server.set(self._settings['server'])
-            self.server.sync()
+        # Reconstruct in the _cond_vars dictionary for public access
+        # # self._name = ''
+        # # self._scope = []
+        # # self._settings = {}
+        #
+        # self._daq = None
+        #
+        # self._sigin = 0
+        # self._sigout = 0
+        # self._scope_time = 1
+        #
+        # self._tc = 0
+        # self._freq = 0
+        # self._rate = 0
 
-            self._get_config()
+        # try:
+        #     port, apilevel = self._discover()
+        #     self.server = ziPython.ziDAQServer('localhost', port, apilevel)
+        #     self.server.connect()
+        #
+        #     msg = self._load_settings()
+        #     self.server.set(self._settings['server'])
+        #     self.server.sync()
+        #
+        #     self._get_config()
+        #
+        #     self._daq = self.server.dataAcquisitionModule()
+        #
+        #     self.cmd_result.emit('Lockin found {}'.formt(msg))
+        # except Exception as e:
+        #     self.cmd_result.emit(str(e))
 
-            self._daq = self.server.dataAcquisitionModule()
-
-            self.last_action = 'Lockin found, %s' % (msg)
-        except Exception as e:
-            self.last_action = str(e)
-
+    # Lockin discovery and initiliazation functions
     ############################################################################
-    # Lockin device discovery functions and settings initiliazation.
+
+    def _open(self):
+        # try:
+        # port, apilevel = self._discover()
+        print(port, apilevel)
+        self.server = ziPython.ziDAQServer('localhost', port, apilevel)
+        self.server.connect()
+
+            # msg = self._load_settings()
+            # self.server.set(self._settings['server'])
+            # self.server.sync()
+            #
+            # self._get_config()
+            #
+            # self._daq = self.server.dataAcquisitionModule()
+
+            # self.cmd_result.emit('Lockin found {}'.formt(msg))
+        # except Exception as err:
+        #     self.cmd_result.emit(str(e))
 
     def _discover(self) -> list[int, int]:
-        """Run API discovery routines, and return port and apilevel to allow connection"""
-        try:
-            disc = ziPython.ziDiscovery()
-            device = disc.findAll()[0]
-            dev_info = disc.get(device)
-            port = dev_info['serverport']
-            apilevel = dev_info['apilevel']
-            self._name = dev_info['deviceid'].lower()
-            self.last_action = 'Lock-in found'
-            return port, apilevel
+        """! Run API discovery routines, and return port and apilevel to allow
+        connection
+        @return [port, apilevel] (list[int, int]) List of the port and apilevel.
+        """
+        # try:
+        disc = ziPython.ziDiscovery()
+        device = disc.findAll()[0]
+        dev_info = disc.get(device)
+        port = dev_info['serverport']
+        apilevel = dev_info['apilevel']
+        self._name = dev_info['deviceid'].lower()
+        self.cmd_result = 'Lock-in found'
+        return port, apilevel
 
-        except Exception as e:
-            self.last_action = 'Lock-in not found. %s' % (str(e))
-            return 8005, 1
+        # except Exception as e:
+        #     self.last_action = 'Lock-in not found. %s' % (str(e))
+        #     return 8005, 1
 
     def _load_settings(self) -> str:
         """
@@ -248,10 +282,6 @@ class ziDAQ(QObject):
             self._api_error = str(msg)
             self.last_action = str(msg)
 
-    @property
-    def name(self):
-        return self._name
-
     ############################################################################
     # Property and setter functions for lockin time constant, modulation
     # frequency and sampling rate
@@ -368,3 +398,29 @@ class ziDAQ(QObject):
             #scope_time = np.ceil(np.max([0, np.log2(clockbase*desired_t_shot/2048.)]))
         except:
             self.last_action = ''
+
+    # Properties for setting values and retrieving results
+    ############################################################################
+    @property
+    def cmd_result(self):
+        """! Property for the private _cmd_result
+        @return _cmd_result (str) The last message read from the device.
+        """
+        return self._cmd_result
+
+    @cmd_result.setter
+    def cmd_result(self, val):
+        """! Property setter for the command result.
+        @param val (str) String to set the command result to. Intended to hold
+        description of the last action taken, e.g. setting a parameter such as the
+        COM port, or a device specific error message.
+        """
+        self._cmd_result = val
+
+
+# class APIError(Exception):
+#     def __init__(self, error):
+#         self.msg = error
+#
+#     def __str__(self):
+#         return self.msg
