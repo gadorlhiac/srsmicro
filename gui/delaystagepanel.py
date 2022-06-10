@@ -12,8 +12,8 @@ from .basicpanel import BasicPanel
 
 class DelayStagePanel(BasicPanel):
     expmt_msg = Signal(str)
-    def __init__(self, **args):
-        super().__init__(**args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def _status_widgets(self):
         widget = QWidget()

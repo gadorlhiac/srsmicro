@@ -20,7 +20,7 @@ if __name__ == '__main__':
     ############################################################################
     mw.gui_changed.connect(controller.parse_signal)
     controller.log.connect(mw.update_log)
-    # controller.device_state.connect(mw.parse_signal)
+    controller.device_state.connect(mw.parse_state)
     controller.data.connect(mw.data)
 
     # Data and log management

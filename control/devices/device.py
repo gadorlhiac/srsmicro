@@ -14,7 +14,7 @@ class Device(QObject):
     """
     ## @var cmd_result
     # (Signal) For relaying device parameters and values.
-    state = Signal(object, object, object)
+    state = Signal(object, object)
 
     ## @var cmd_result
     # (Signal) Last message read back from the device. Used to report results.
@@ -119,14 +119,15 @@ class Device(QObject):
         """! Property for returning the device parameters and values."""
         return self._cond_vars
 
-    def return_state(self):
+    def emit_state(self):
         """! Performs device specific status queries. Intended for execution
         on a separate thread, so it can be run infinitely at given intervals.
         Must be overloaded on a per device basis to account for differences in
         communication syntax. Has no return value. Instead emits a signal with
         the necessary information.
         """
-        self.state.emit(self.name, 'loop', 'loop')
+        self.state.emit(self.name, self._cond_vars)
+        # print(self.name, self._cond_vars.keys(), self._cond_vars.values())
 
     @property
     def logs(self):

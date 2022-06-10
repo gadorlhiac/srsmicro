@@ -45,14 +45,17 @@ class MainWindow(QMainWindow):
     ## @var insight_logs
     # (Signal) Emit insight specific logs.
     insight_logs: ClassVar[Signal] = Signal(object)
+    insight_state: ClassVar[Signal] = Signal(dict)
 
     ## @var delaystage_logs
     # (Signal) Emit delay stage specific logs.
     delaystage_logs: ClassVar[Signal] = Signal(object)
+    delaystage_state: ClassVar[Signal] = Signal(dict)
 
     ## @var zi_logs
     # (Signal) Emit lock-in amplifier specific logs.
     zi_logs: ClassVar[Signal] = Signal(object)
+    zi_state: ClassVar[Signal] = Signal(dict)
 
     ## @var fssrs_logs
     # (Signal) Emit fsSRS experiment type specific logs.
@@ -147,7 +150,7 @@ class MainWindow(QMainWindow):
                                                    'Insight Controls',
                                                    'Delay Stage Controls',
                                                    'ZI Controls',
-                                                   'Kcube Controls',
+                                                   # 'Kcube Controls',
                                                    # 'DMD Controls',
                                                    'fsSRS'])
                                                    # 'Spectral Focusing',
@@ -216,6 +219,7 @@ class MainWindow(QMainWindow):
         self._insight_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._insight_panel.update_data)
         self.insight_logs.connect(self._insight_panel.update_log)
+        self.insight_state.connect(self._insight_panel.update_state)
 
         ## @var _delaystage_panel
         # Contains delay stage specific GUI elements
@@ -223,6 +227,7 @@ class MainWindow(QMainWindow):
         self._delaystage_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._delaystage_panel.update_data)
         self.delaystage_logs.connect(self._delaystage_panel.update_log)
+        self.delaystage_state.connect(self._delaystage_panel.update_state)
 
         ## @var _zi_panel
         # Contains lock-in amplifier specific GUI elements
@@ -230,6 +235,7 @@ class MainWindow(QMainWindow):
         self._zi_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._zi_panel.update_data)
         self.zi_logs.connect(self._zi_panel.update_log)
+        self.zi_state.connect(self._zi_panel.update_state)
 
         ## @var _fssrs_panel
         # Contains GUI elements for running a simple SRS experiment and
@@ -247,7 +253,7 @@ class MainWindow(QMainWindow):
         @param param The parameter that was changed.
         @param val The value to which the experiment was changed.
         """
-        panels = { ''------------' : BasicPanel(hideTitle=True),
+        panels = { '------------' : BasicPanel(hideTitle=True),
                    'Insight Controls' : self._insight_panel,
                    'Delay Stage Controls' : self._delaystage_panel,
                    'ZI Controls' : self._zi_panel,
@@ -258,7 +264,7 @@ class MainWindow(QMainWindow):
         self._dock_area.addDock(self._current_panel, position='right')
 
 
-    def parse_state(self, device, param, val):
+    def parse_state(self, device, params):
         """! Slot for updating device specific GUI elements, e.g. to display a
         parameter change. This slot parses the signal and relays a separate
         signal to the appropriate GUI elements corresponding to the device.
@@ -266,7 +272,12 @@ class MainWindow(QMainWindow):
         @param param (str) The parameter/setting for the device that changed.
         @param val The new value for the parameter param.
         """
-        print(device, param, val)
+        if device == 'Insight':
+            self.insight_state.emit(params)
+        elif device == 'Delay Stage':
+            self.delaystage_state.emit(params)
+        elif device == 'Lockin':
+            self.zi_state.emit(params)
 
     # Console tab and related options
     ############################################################################
@@ -339,26 +350,6 @@ class MainWindow(QMainWindow):
         self._logs.insertPlainText('{}: {}\n'.format(time.asctime(time.localtime(time.time())),
                                                     msg))
 
-    # Application close and cleanup
-    ############################################################################
-    def closeEvent(self, event):
-        """! Shutdown routine. On clicking the 'X' for closing a message will
-        appear accessing for confirmation. Acceptance closes the application
-        and emits signals where needed to allow proper shutdown and logging.
-        """
-        result = QMessageBox.question(self, 'Confirm Exit',
-                                      'Are you sure you want to exit ?',
-                                      QMessageBox.Yes | QMessageBox.No)
-        event.ignore()
-
-        if result == QMessageBox.Yes:
-            sys.stdout = sys.__stdout__
-            self.update_log('Shutting down.')
-            self.log_changed.emit(self._logs.toPlainText())
-            # with open('logs.txt', 'a') as f:
-            #     f.write(self._logs.toPlainText())
-            event.accept()
-
     # Menubar options and actions
     ############################################################################
     def _create_menubar(self):
@@ -389,10 +380,10 @@ class MainWindow(QMainWindow):
         self._save_im_act.triggered.connect(self._saveim)
 
         ## @var _save_state
-        # QAction for the _filemenu Save State option
-        self._save_state_act: QAction = QAction('&Save State', self)
-        self._save_state_act.setStatusTip('Save GUI Configuration')
-        self._save_state_act.triggered.connect(self._savestate)
+        # QAction for the _filemenu Save ZI State option
+        self._save_zistate_act: QAction = QAction('&Save ZI State', self)
+        self._save_zistate_act.setStatusTip('Save ZI Parameter Settings to File')
+        self._save_zistate_act.triggered.connect(self._savezistate)
 
 
         ## @var _console_act
@@ -408,7 +399,7 @@ class MainWindow(QMainWindow):
         # Add all options to the menu.
         self._filemenu.addAction(self._open_act)
         self._filemenu.addAction(self._save_im_act)
-        self._filemenu.addAction(self._save_state_act)
+        self._filemenu.addAction(self._save_zistate_act)
         self._filemenu.addSeparator()
         self._filemenu.addAction(self._console_act)
 
@@ -421,6 +412,26 @@ class MainWindow(QMainWindow):
     def _saveim(self):
         """! Save an image. Not currently in use."""
         pass
-    def _savestate(self):
+    def _savezistate(self):
         """! Save a configuration/state. Not currently in use."""
         pass
+
+    # Application close and cleanup
+    ############################################################################
+    def closeEvent(self, event):
+        """! Shutdown routine. On clicking the 'X' for closing a message will
+        appear accessing for confirmation. Acceptance closes the application
+        and emits signals where needed to allow proper shutdown and logging.
+        """
+        result = QMessageBox.question(self, 'Confirm Exit',
+                                      'Are you sure you want to exit ?',
+                                      QMessageBox.Yes | QMessageBox.No)
+        event.ignore()
+
+        if result == QMessageBox.Yes:
+            sys.stdout = sys.__stdout__
+            self.update_log('Shutting down.')
+            self.log_changed.emit(self._logs.toPlainText())
+            # with open('logs.txt', 'a') as f:
+            #     f.write(self._logs.toPlainText())
+            event.accept()

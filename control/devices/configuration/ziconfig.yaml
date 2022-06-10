@@ -1,0 +1,846 @@
+- - /dev1292/system/extclk
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - &id001 !!python/object/apply:numpy.dtype
+      args:
+      - i8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/system/syncenable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/system/syncreset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/0/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/0/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/0/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - &id002 !!python/object/apply:numpy.dtype
+      args:
+      - f8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      tPNXeYIqyT4=
+- - /dev1292/demods/0/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      2FBeQ7kb/EA=
+- - /dev1292/demods/0/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/0/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/0/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/0/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/0/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/0/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/1/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      no9QjB/RhD8=
+- - /dev1292/demods/1/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/1/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/1/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/2/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      no9QjB/RhD8=
+- - /dev1292/demods/2/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/2/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/2/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/3/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/3/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/3/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      no9QjB/RhD8=
+- - /dev1292/demods/3/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/3/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/3/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/3/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/3/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/3/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/3/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/4/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/4/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/4/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      no9QjB/RhD8=
+- - /dev1292/demods/4/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/4/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/4/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/4/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/4/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/4/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/4/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/5/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/5/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/demods/5/timeconstant
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      no9QjB/RhD8=
+- - /dev1292/demods/5/rate
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/5/trigger
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/5/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/5/oscselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/5/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/demods/5/phaseshift
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/demods/5/sinc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/oscs/0/freq
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      pQAAAIibY0E=
+- - /dev1292/oscs/1/freq
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      XfP//3+ELkE=
+- - /dev1292/plls/0/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/plls/0/freqcenter
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      XfP//3+ELkE=
+- - /dev1292/plls/0/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/plls/0/adcthreshold
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      ZAAAAAAAAAA=
+- - /dev1292/plls/0/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/plls/0/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/plls/1/adcselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/plls/1/freqcenter
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      XfP//3+ELkE=
+- - /dev1292/plls/1/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/plls/1/adcthreshold
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      ZAAAAAAAAAA=
+- - /dev1292/plls/1/harmonic
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/plls/1/order
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      BAAAAAAAAAA=
+- - /dev1292/sigins/0/range
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      C93FfzeEhD8=
+- - /dev1292/sigins/0/ac
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigins/0/imp50
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigins/0/diff
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigins/1/range
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      iaW8KbMy8z8=
+- - /dev1292/sigins/1/ac
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigins/1/imp50
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigins/1/diff
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigouts/0/on
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/add
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/range
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAA8D8=
+- - /dev1292/sigouts/0/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/enables/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigouts/0/enables/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/amplitudes/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      Y2bGzIyZuT8=
+- - /dev1292/sigouts/0/amplitudes/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/waveforms/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/0/waveforms/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/on
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/add
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/range
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAA8D8=
+- - /dev1292/sigouts/1/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/enables/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/enables/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/sigouts/1/amplitudes/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/amplitudes/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      Y2bGzIyZuT8=
+- - /dev1292/sigouts/1/waveforms/6
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/sigouts/1/waveforms/7
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/channel
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/time
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/bwlimit
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/trigchannel
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      //////////8=
+- - /dev1292/scopes/0/enable
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/trigedge
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/scopes/0/triglevel
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/scopes/0/trigholdoff
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAA0D8=
+- - /dev1292/dios/0/extclk
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/dios/0/decimation
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAEAAAAAAAA=
+- - /dev1292/dios/0/drive
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/dios/0/output
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/dios/0/syncselect0
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      CAAAAAAAAAA=
+- - /dev1292/dios/0/syncselect1
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      CAAAAAAAAAA=
+- - /dev1292/auxins/0/averaging
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAEAAAAAAAA=
+- - /dev1292/auxouts/0/outputselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/0/demodselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/0/scale
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      ESAWgFXIe0A=
+- - /dev1292/auxouts/0/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/1/outputselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/auxouts/1/demodselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/1/scale
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      ESAWgFXIe0A=
+- - /dev1292/auxouts/1/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/2/outputselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/2/demodselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AwAAAAAAAAA=
+- - /dev1292/auxouts/2/scale
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      VtF0/sWwDUA=
+- - /dev1292/auxouts/2/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/auxouts/3/outputselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/auxouts/3/demodselect
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AwAAAAAAAAA=
+- - /dev1292/auxouts/3/scale
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      VtF0/sWwDUA=
+- - /dev1292/auxouts/3/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/0/camp/r
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/0/camp/gain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/0/camp/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/0/camp/singleended
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/0/currentgain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      6AMAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/0/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/0/voltagegain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/0/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AACkwvV6hD4=
+- - /dev1292/zctrls/0/tamp/1/currentgain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      6AMAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/1/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/1/voltagegain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/1/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AACkwvV6hD4=
+- - /dev1292/zctrls/0/tamp/extbias
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/0/tamp/biasout
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAUABQAJD8=
+- - /dev1292/zctrls/1/camp/r
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/1/camp/gain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/1/camp/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/1/camp/singleended
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/0/currentgain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      6AMAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/0/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/0/voltagegain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/0/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AACkwvV6hD4=
+- - /dev1292/zctrls/1/tamp/1/currentgain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      6AMAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/1/dc
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/1/voltagegain
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AQAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/1/offset
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AACkwvV6hD4=
+- - /dev1292/zctrls/1/tamp/extbias
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      AAAAAAAAAAA=
+- - /dev1292/zctrls/1/tamp/biasout
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      AAAUABQAJD8=

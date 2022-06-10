@@ -7,8 +7,8 @@ from PyQt5.QtCore import pyqtSignal as Signal
 class BasicPanel(Dock):
     #expmt_msg = Signal(str, str)
     expmt_msg = Signal(str)
-    def __init__(self, **args):
-        super().__init__('Experiment Panel', **args)
+    def __init__(self, *args, **kwargs):
+        super().__init__('Experiment Panel', *args, **kwargs)
         self.headerfont = QtGui.QFont()
         self.headerfont.setFamily("Verdana")
         self.headerfont.setPointSize(18)
@@ -47,6 +47,9 @@ class BasicPanel(Dock):
         pass
 
     def update_data(self, data):
+        pass
+
+    def update_state(self, params):
         pass
 
     # Device specific logging

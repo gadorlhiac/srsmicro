@@ -8,7 +8,7 @@ from PyQt5.QtCore import QThread, QObject
 import time
 
 class MainController(QObject):
-    device_state = Signal(object, object, object)
+    device_state = Signal(object, object)
     data = Signal(object)
     log = Signal(str)
 
@@ -29,6 +29,11 @@ class MainController(QObject):
         # self._kcube = PyKCube()
         # self._dmd = DMD()
 
+        # Signals for device state
+        self._insight.state.connect(self.device_state)
+        self._delaystage.state.connect(self.device_state)
+        self._zi.state.connect(self.device_state)
+
         self._insight.cmd_result.connect(self._read_result)
         self._delaystage.cmd_result.connect(self._read_result)
         self._zi.cmd_result.connect(self._read_result)
@@ -39,7 +44,7 @@ class MainController(QObject):
 
         # Separate thread for infinite state querying at specified intervals
         self._status_thread = QThread()
-        self._reporter = StatusReporter([self._insight])
+        self._reporter = StatusReporter([self._insight, self._zi])
         self._reporter.moveToThread(self._status_thread)
         self._status_thread.started.connect(self._reporter.query_state)
 
@@ -72,7 +77,11 @@ class MainController(QObject):
 
     def parse_data(self, type, data):
         if type == 'Image':
-            self.new_data.emit(data)
+            self.data.emit(data)
+
+    # def parse_data(self, type, data):
+    #     if type == 'Image':
+    #         self.new_data.emit(data)
 
     def parse_signal(self, mw, device: str, parameter: str, val: str):
         # MainWindow emits a signal with a reference to GUI component, the device

@@ -1,15 +1,19 @@
 from .device import Device
 from .zurichdaq import ZurichDaq
+# from srsmicro.utilities.conversions import load_zi_yaml
 import zhinst.ziPython as ziPython
 from PyQt5.QtCore import QObject, QThread
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
+import yaml
 
 # For simplicity, use the same names as serial devices
 # Need _cond_vars
 # Need _logs and logs
 # Need cmd_result
 # Need name, this will be different than the name used by the server API
+
+# _cond_vars is a list of list as opposed to
 
 class ZurichLockin(Device):
     """The base class for the ZI HFL2I lock-in amplifier.
@@ -27,10 +31,35 @@ class ZurichLockin(Device):
         ## @var _devname
         # Actual hardware device name for internal use with the server API
         self._devname: str = ''
+        # self._cond_vars_list, self._cond_vars = load_zi_yaml('srsmicro/control/devices/configuration/ziconfig.yaml')
+        self._load_variables()
         self._cond_vars['dwell'] = 1e-5
 
-    # Lockin discovery and configuration functions
+    # Loading, lock-in discovery and configuration functions
     ############################################################################
+    def _load_variables(self):
+        """! Load in the parameter hierarchy from the included configuration
+        file. One copy is loaded into a list-of-lists format which can be passed
+        directly to ZI API objects for setting parameters. A separate copy is
+        converted to a dictionary which matches the format used by other devices
+        for accessing parameters. The config file is also used by ZI gui element.
+        """
+        ## @var _cond_vars_list
+        # (list[list]) All possible ZI parameters in list of list format. Each
+        # list is of the format [str, int/float/long] where the first entry is a
+        # parameter path, and the second is a parameter setting.
+
+        ## @var _cond_vars
+        # (dict[str]:int/float/long) _cond_vars_list converted to dictionary
+        # format for easier parameter accession and to match the format used by
+        # other devices.
+        with open('srsmicro/control/devices/configuration/ziconfig.yaml', 'r') as f:
+            self._cond_vars_list = yaml.unsafe_load(f)
+        self._cond_vars = {}
+        for i in range(len(self._cond_vars_list)):
+            tmp = self._cond_vars_list[i]
+            self._cond_vars[tmp[0]] = tmp[1]
+
     def _open(self):
         """! Run the ZI API discovery routine and attempt to start the lock-in
         amplifier server.
@@ -49,11 +78,13 @@ class ZurichLockin(Device):
             self._server = ziPython.ziDAQServer('localhost', port, apilevel)
             self._server.connect()
 
-            # Use external clock
-            self._server.set([['/{}/system/extclk'.format(self._devname), 1]])
-            self._server.sync()
-            self._enable_demod()
-            self._configure_sigin()
+            self._server.set(self._cond_vars_list)
+
+            # # Use external clock
+            # self._server.set([['/{}/system/extclk'.format(self._devname), 1]])
+            # self._server.sync()
+            # self._enable_demod()
+            # self._configure_sigin()
 
             # Create ZurichDaq object and the separate thread it runs on
             # The ZurichDaq has a dataAcquisitionModule which also runs on an
@@ -61,9 +92,9 @@ class ZurichLockin(Device):
             # polling of the dataAcquisitionModule while that in turn polls reads
             # continuously from the physical device itself
             self._daq_thread = QThread()
-            self._daq.moveToThread(self._daq_thread)
             self._daq = ZurichDaq(self._server.dataAcquisitionModule(),
                         self._devname, '/{}/demods/0/sample'.format(self._devname))
+            self._daq.moveToThread(self._daq_thread)
 
             # Connect _image_data for relaying information to controller and
             # gui
@@ -127,17 +158,17 @@ class ZurichLockin(Device):
         self._logs += 'Oscillator {} using:\n'.format(osc)
         self._logs += '{}: {}\n'.format('freq', freq)
 
-    def _configure_sigin(self, sigin=0, ac=1, i50=1, diff=0, range=.01):
+    def _configure_sigin(self, sigin=0, ac=1, imp50=1, diff=0, range=.01):
         """! Configure signal in parameters.
         @param sigin (int) Index of signal input to configure. Default: 0
         @param ac (int) Whether to enable AC coupling. Default: 1 (Enable)
-        @param i50 (int) Whether input impedance is set to 50 ohm. Default: 1 (Yes)
+        @param imp50 (int) Whether input impedance is set to 50 ohm. Default: 1 (Yes)
         @param diff (int) Whether using differential input. Default: 0 (No)
         @param range (float) Voltage range of signal in V (0.0001). Default: 0.01
         """
         # Signal input parameter settings
         sig_set = [['/{}/sigins/{}/ac'.format(self._devname, sigin), ac],
-                   ['/{}/sigins/{}/imp50'.format(self._devname, sigin), i50],
+                   ['/{}/sigins/{}/imp50'.format(self._devname, sigin), imp50],
                    ['/{}/sigins/{}/diff'.format(self._devname, sigin), diff],
                    ['/{}/sigins/{}/range'.format(self._devname, sigin), range]]
 
@@ -148,7 +179,7 @@ class ZurichLockin(Device):
         # Update object copy of parameters and logs
         self._cond_vars['sigin{}'.format(sigin)] = { 'enable' : 1,
                                                      'ac' : ac,
-                                                     'imp50' : i50,
+                                                     'imp50' : imp50,
                                                      'diff' : diff,
                                                      'range' : range}
 
@@ -207,10 +238,20 @@ class ZurichLockin(Device):
     def acquiring(self):
         return not self._daq.finished()
 
+    def return_state(self):
+        """! Performs device specific status queries. Intended for execution
+        on a separate thread, so it can be run infinitely at given intervals.
+        Must be overloaded on a per device basis to account for differences in
+        communication syntax. Has no return value. Instead emits a signal with
+        the necessary information.
+        """
+        self.state.emit(self.name, 'loop', 'loop')
+
     # On application close
     ############################################################################
     def exit(self):
         self._daq_thread.quit()
+        self._server.disconnect()
         self.close()
 
     # Polling without DAQ module
@@ -237,6 +278,8 @@ class ZurichLockin(Device):
 
         self.server.subscribe(path)
         self.server.sync()
+
+        # Need to flush before subscribing
 
         try:
             data = self.server.poll(poll_length, timeout, 1, flat_dictionary_key)

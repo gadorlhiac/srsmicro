@@ -12,8 +12,8 @@ from .basicpanel import BasicPanel
 
 # class InsightPanel(BasicPanel):
 class InsightPanel(BasicPanel):
-    def __init__(self, **args):
-        super().__init__(**args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def _status_widgets(self):
         widget = QWidget()

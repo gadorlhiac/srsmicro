@@ -4,12 +4,13 @@ import numpy as np
 from PyQt5.QtWidgets import QWidget, QLabel, QPlainTextEdit
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
+from .basicpanel import BasicPanel
 
-class FemtoRamanPanel(Dock):
+class FemtoRamanPanel(BasicPanel):
     #expmt_msg = Signal(str, str)
     expmt_msg = Signal(str)
-    def __init__(self, **args):
-        super().__init__('Experiment Panel', **args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # Need basic log/report area, controls area, and an output area
         # self.addWidget(self._display_widget(), 0, 0, 1, -1)
 
