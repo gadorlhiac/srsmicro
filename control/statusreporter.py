@@ -4,18 +4,27 @@ from PyQt5.QtCore import pyqtSlot as Slot
 import time
 
 class StatusReporter(QObject):
-    """The class for device status querying.
+    """Worker class for device status querying.
 
     Executes query functions for every device reference it is passed.
     """
     shutdown = Signal()
 
     def __init__(self, devices):
+        """! The StatusReporter constructor.
+        @param devices (List) A list of all devices to have their state queried.
+        """
         super().__init__()
+
+        ## @var devices
+        # (list) List of device references. Used only for querying status.
         self.devices = devices
         self.pause = False
 
     def query_state(self):
+        """! Method to query device state. Runs infinitely, unless an interrupt
+        signal is received, asking devices to emit their state conditions.
+        """
         while True:
             time.sleep(2)
             for device in self.devices:
@@ -24,6 +33,10 @@ class StatusReporter(QObject):
                 return
 
     def add_device(self, device):
+        """! Method to add a device to the query list if it was not included
+        during object initiliazation.
+        @param device (Device) The device object to be added to the list.
+        """
         self.devices.append(device)
         device.state.connect(self.parse_status)
         self.pause = False

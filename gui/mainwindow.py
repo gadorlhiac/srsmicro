@@ -24,6 +24,13 @@ from pyqtgraph.parametertree.parameterTypes import ListParameter
 from pyqtgraph.console import ConsoleWidget
 
 class MainWindow(QMainWindow):
+    """! The main SRS microscope window populated with the necessary
+    elements for various experiment types and loading of data/projects.
+    Contains a DockArea, to allow rearrangement of the various GUI
+    modules.
+    @todo Currently there is a bug requiring that titles of dock elements be
+    hidden, which gets rid of the ability to move docks around and float them.
+    """
     # Signals for the controller or experiment result connected through __main__
     ############################################################################
 
@@ -62,13 +69,7 @@ class MainWindow(QMainWindow):
     fssrs_logs: ClassVar[Signal] = Signal(object)
 
     def __init__(self):
-        """! The main SRS microscope window populated with the necessary
-        elements for various experiment types and loading of data/projects.
-        Contains a DockArea, to allow rearrangement of the various GUI
-        modules.
-        @todo Currently there is a bug requiring that titles of dock elements be
-        hidden, which gets rid of the ability to move docks around and float them.
-        """
+        """! The MainWindow constructor."""
         super().__init__()
         self.setWindowTitle('SRS Microscope')
 
@@ -269,8 +270,7 @@ class MainWindow(QMainWindow):
         parameter change. This slot parses the signal and relays a separate
         signal to the appropriate GUI elements corresponding to the device.
         @param device (str) The device whose state was updated.
-        @param param (str) The parameter/setting for the device that changed.
-        @param val The new value for the parameter param.
+        @param params (dict) The parameters/settings for the device that changed.
         """
         if device == 'Insight':
             self.insight_state.emit(params)
@@ -420,7 +420,7 @@ class MainWindow(QMainWindow):
     ############################################################################
     def closeEvent(self, event):
         """! Shutdown routine. On clicking the 'X' for closing a message will
-        appear accessing for confirmation. Acceptance closes the application
+        appear asking for confirmation. Acceptance closes the application
         and emits signals where needed to allow proper shutdown and logging.
         """
         result = QMessageBox.question(self, 'Confirm Exit',

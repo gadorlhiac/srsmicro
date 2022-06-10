@@ -145,4 +145,5 @@ class Device(QObject):
     # On application close
     ############################################################################
     def exit(self):
+        """! Device shutdown method. Overwritten by subclasses."""
         pass
