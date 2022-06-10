@@ -21,7 +21,7 @@ if __name__ == '__main__':
     mw.gui_changed.connect(controller.parse_signal)
     controller.log.connect(mw.update_log)
     # controller.device_state.connect(mw.parse_signal)
-    controller.new_data.connect(mw.new_data)
+    controller.data.connect(mw.data)
 
     # Data and log management
     ############################################################################
@@ -32,9 +32,10 @@ if __name__ == '__main__':
 
     # Cleanup on shutdown
     ############################################################################
-    app.aboutToQuit.connect(controller.stop)
-    app.aboutToQuit.connect(result.stop)
-    # app.aboutToQuit.connect(mw.stop)
+    app.aboutToQuit.connect(controller.exit)
+    app.aboutToQuit.connect(result.exit)
+
+    # MainWindow has it's own closeEvent slot which handles exiting
 
     # Start application and device communication
     controller.init_devices()

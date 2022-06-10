@@ -59,7 +59,7 @@ class Device(QObject):
             self.cmd_result.emit('Unable to open communication: {}'.format(str(err)))
 
     def close(self):
-        """! Close communication for the device on port: comport"""
+        """! Close communication for the physical device if needed"""
         if self._isconnected:
             try:
                 self._close()
@@ -140,3 +140,8 @@ class Device(QObject):
     def current_time(self):
         """! Property to return current time. Useful for logging purposes."""
         return time.asctime(time.localtime(time.time()))
+
+    # On application close
+    ############################################################################
+    def exit(self):
+        pass

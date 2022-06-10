@@ -120,3 +120,8 @@ class SerialDevice(Device):
             self._comport = val
             # self.cmd_result = 'COM port set to: {}'.format(val)
             self.cmd_result.emit('COM port set to: {}'.format(val))
+
+    # On application close
+    ############################################################################
+    def exit(self):
+        self.close()

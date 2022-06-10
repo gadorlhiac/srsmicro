@@ -28,6 +28,6 @@ class FemtoRamanPanel(Dock):
     def _controls_widgets(self):
         pass
 
-    def update(self, data):
+    def update_data(self, data):
         self.data = data
         self.imv.setImage(self.data)

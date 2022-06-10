@@ -24,16 +24,16 @@ class ExperimentResult:
         print(self._path)
 
         try:
-            self.file = h5py.File('{}/{}.h5'.format(self._path, name), 'w')
+            self.file = h5py.File('{}/{}.h5'.format(self._path, name), 'a')
         except Exception as e:
             print('Improper path specified. Using current working directory.')
             self._path = os.getcwd()
-            self.file = h5py.File('{}/{}.h5'.format(self._path, name), 'w')
+            self.file = h5py.File('{}/{}.h5'.format(self._path, name), 'a')
 
-        self.file['logs'] = ''
+        self.file['logs'][()] = ''
 
     def write_logs(self,  logs):
         self.file['logs'][()] = logs
 
-    def stop(self):
+    def exit(self):
         self.file.close()

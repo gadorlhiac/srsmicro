@@ -11,6 +11,8 @@ class ZurichDaq(QObject):
     the ZI API for smoother integration with the Qt framework.
     """
     data = Signal(object)
+    shutdown = Signal()
+
     def __init__(self, daq, devname, path):
         """! The ZurichDaq constructor.
         @param devname (str) The lock-in device name, needed for the parameter hierarchy.
@@ -120,19 +122,9 @@ class ZurichDaq(QObject):
     @stop.setter
     def stop(self, val):
         self._stop = val
-# Read DAQ
-        # read = '/%s/DEMODS/0/sample' % (self._name)
-        # while not self._daq.finished():
-        #     try:
-        #         read = self._daq.read(True)
-        #         data = np.zeros([512, 512])
-        #         # Can return multiple frames, but right now only care about most
-        #         # recent
-        #         num_frames = len(read['%s.r' % (path)])
-        #         for i in range(num_frames):
-        #             flags = read['%s.r' % (path)][i]['header']['flags']
-        #             if flags & 1:
-        #                 data = np.array(read['%s.r' % (path)][i]['value'])
-        #                 self.daqData.emit(data)
-        #     except KeyError:
-        #         pass
+
+    # On application close
+    ############################################################################
+    def exit(self):
+        self._daq.clear()
+        self.deleteLater()

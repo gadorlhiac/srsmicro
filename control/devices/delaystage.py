@@ -184,6 +184,15 @@ class DelayStage(SerialDevice):
             # self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
             self.cmd_result.emit('Delay stage not moved. {}.'.format(str(err)))
 
+    # On application close
+    ############################################################################
+    # Not needed, using super class routine is fine for this device.
+    # def exit(self):
+    #     if self._isconnected:
+    #         self.write('OFF', self.comtime)
+    #     self.close()
+
+
 # PositionerError
 ################################################################################
 

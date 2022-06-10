@@ -11,7 +11,7 @@ from pyqtgraph.parametertree.parameterTypes import ListParameter
 from .basicpanel import BasicPanel
 
 # class InsightPanel(BasicPanel):
-class InsightPanel(BasicPanel):
+class ZiPanel(BasicPanel):
     def __init__(self, **args):
         super().__init__(**args)
 
@@ -19,7 +19,7 @@ class InsightPanel(BasicPanel):
         widget = QWidget()
         layout = QGridLayout()
 
-        label = QLabel('Laser Status')
+        label = QLabel('Lock-in Amplifier Settings')
         label.setFont(self.headerfont)
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label, 0, 0, 1, -1)
@@ -114,7 +114,7 @@ class InsightPanel(BasicPanel):
         widget = QWidget()
         layout = QGridLayout()
 
-        label = QLabel('Laser Controls')
+        label = QLabel('Lock-in Amplifier Controls')
         label.setFont(self.headerfont)
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label, 0, 0, 1, -1)

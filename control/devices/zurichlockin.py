@@ -54,9 +54,27 @@ class ZurichLockin(Device):
             self._server.sync()
             self._enable_demod()
             self._configure_sigin()
+
+            # Create ZurichDaq object and the separate thread it runs on
+            # The ZurichDaq has a dataAcquisitionModule which also runs on an
+            # independent thread. This allows the ZurichDaq to do continuous
+            # polling of the dataAcquisitionModule while that in turn polls reads
+            # continuously from the physical device itself
+            self._daq_thread = QThread()
+            self._daq.moveToThread(self._daq_thread)
             self._daq = ZurichDaq(self._server.dataAcquisitionModule(),
                         self._devname, '/{}/demods/0/sample'.format(self._devname))
+
+            # Connect _image_data for relaying information to controller and
+            # gui
             self._daq.data.connect(self._image_data)
+
+            # Connect signal/slots for shutdown to thread signal/slots
+            # Thread shutdown occurs in the ZurichLockin exit routine below
+            self._daq.shutdown.connect(self._daq_thread.quit)
+            self._daq.shutdown.connect(self._daq.exit)
+            self._daq_thread.finished.connect(self._daq_thread.deleteLater)
+
 
     def _enable_demod(self, demod=0, sigin=0, freq=1.028e7, harm=1, tc=3e-6,
                                                     order=4, osc=0, rate=100000):
@@ -165,10 +183,8 @@ class ZurichLockin(Device):
     # DAQ management (Imaging)
     ############################################################################
     def start_daq(self):
-        self._daqthread = QThread()
-        self._daq.moveToThread(self._daqthread)
-        self._daqthread.started.connect(self._daq.start)
-        self._daqthread.start()
+        self._daq_thread.started.connect(self._daq.start)
+        self._daq_thread.start()
 
     def stop_daq(self):
         self._daq.stop = True
@@ -190,6 +206,12 @@ class ZurichLockin(Device):
     @property
     def acquiring(self):
         return not self._daq.finished()
+
+    # On application close
+    ############################################################################
+    def exit(self):
+        self._daq_thread.quit()
+        self.close()
 
     # Polling without DAQ module
     ############################################################################

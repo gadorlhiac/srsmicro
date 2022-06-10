@@ -8,8 +8,8 @@ from PyQt5.QtCore import QThread, QObject
 import time
 
 class MainController(QObject):
-    device_state = Signal(object, object, object, object)
-    new_data = Signal(object)
+    device_state = Signal(object, object, object)
+    data = Signal(object)
     log = Signal(str)
 
     def __init__(self):
@@ -115,14 +115,16 @@ class MainController(QObject):
     def return_device_conditions(self):
         return self._insight.cond_vars
 
-    def stop(self):
+    def exit(self):
         self.running = False
         print('Shutting down controller')
         print('....Exiting device status thread')
         self._status_thread.quit()
         print('Closing devices connections....')
         print('....Insight entering hibernation mode. Serial port closed.')
+        self._insight.exit()
         print('....Delay stage serial port closed.')
+        self._delaystage.exit()
         print('....ZI lock-in server connection closed.')
-        print('....KCube connection closed.')
-        print('All logs and data written to output file.')
+        self._zi.exit()
+        # print('....KCube connection closed.')

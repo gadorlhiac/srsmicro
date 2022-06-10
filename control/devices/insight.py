@@ -14,9 +14,9 @@ class Insight(SerialDevice):
              'd2_curr': 'READ:PLASer:DIODe2:CURRent', # Operating current for diode 2
              'd2_hrs': 'READ:PLASer:DIODe2:HOURS', # Operating hours for diode 2
              'd2_temp': 'READ:PLASer:DIODe2:TEMPerature', # Diode 2 temperature
-             'dsmmax': 'CONT:SLMAX', # Maximum GVD compensation position for insight, given current wavelength
-             'dsmmin': 'CONT:SLMIN', # Minimum GVD compensation position for insight, given current wavelength
-             'dsmpos': 'CONT:DSMPOS', # The current GVD compensation position for insight
+             'dsm_max': 'CONT:SLMAX', # Maximum GVD compensation position for insight, given current wavelength
+             'dsm_min': 'CONT:SLMIN', # Minimum GVD compensation position for insight, given current wavelength
+             'dsm_pos': 'CONT:DSMPOS', # The current GVD compensation position for insight
              'fixed_shutter': 'IRSHUTter', # Open/close 1040 nm shutter
              'main_shutter': 'SHUTter', # Open/close main (OPO) shutter
              'opo_wl': 'WAVelength' # OPO wavelength
@@ -144,3 +144,10 @@ class Insight(SerialDevice):
 
     # def return_state(self):
     #     pass
+
+    # On application close
+    ############################################################################
+    def exit(self):
+        if self._isconnected:
+            self.write('OFF', self.comtime)
+        self.close()
