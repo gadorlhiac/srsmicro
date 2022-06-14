@@ -33,7 +33,7 @@ class ZurichLockin(Device):
         self._devname: str = ''
         # self._cond_vars_list, self._cond_vars = load_zi_yaml('srsmicro/control/devices/configuration/ziconfig.yaml')
         self._load_variables()
-        self._cond_vars['dwell'] = 1e-5
+        # self._cond_vars['dwell'] = 1e-5
 
     # Loading, lock-in discovery and configuration functions
     ############################################################################
@@ -78,12 +78,13 @@ class ZurichLockin(Device):
             self._server = ziPython.ziDAQServer('localhost', port, apilevel)
             self._server.connect()
 
-            self._server.set(self._cond_vars_list)
-
+            # print([[key, self._cond_vars[key]] for key in self._cond_vars])
+            self._server.set([[key, self._cond_vars[key]] for key in self._cond_vars])
+            # self._server.set(self._cond_vars_list)
             # # Use external clock
             # self._server.set([['/{}/system/extclk'.format(self._devname), 1]])
             # self._server.sync()
-            # self._enable_demod()
+            self._enable_demod()
             # self._configure_sigin()
 
             # Create ZurichDaq object and the separate thread it runs on
@@ -127,6 +128,13 @@ class ZurichLockin(Device):
                       ['/{}/demods/{}/order'.format(self._devname, demod), order],
                       ['/{}/demods/{}/oscselect'.format(self._devname, demod), 0],
                       ['/{}/demods/{}/rate'.format(self._devname, demod), rate]]
+
+        # Can try some clever comprehensions
+        # dem = 'demods/{}'.format(demod)
+        # values = {'range': range, 'rate': rate, 'adcselect': sigin, 'order': order, 
+        #           'harmonic':harm, 'timeconstant':tc}
+        # parameters = [[key, self._cond_vars[key]] for key in self._cond_vars if dem in key]
+        # for p in parameters:
 
         # Push settings to lock-in
         self._server.set(parameters)
@@ -220,32 +228,8 @@ class ZurichLockin(Device):
     def stop_daq(self):
         self._daq.stop = True
 
-    # def create_daq(self, path: str) -> (QThread, ZurichDaq):
-    #     path = '/{}/demods/0/sample.r'
-    #     self._daqthread = QThread()
-    #     self._daq = self._server.dataAcquisitionModule()
-    #     self._daq.moveToThread(_daqthread)
-    #     self._daqthread.start()
-        # return _daqthread, _daq
-
     def _image_data(self, data):
         self.data.emit('Image', data)
-
-    # def read_daq():
-    #     pass
-
-    @property
-    def acquiring(self):
-        return not self._daq.finished()
-
-    def return_state(self):
-        """! Performs device specific status queries. Intended for execution
-        on a separate thread, so it can be run infinitely at given intervals.
-        Must be overloaded on a per device basis to account for differences in
-        communication syntax. Has no return value. Instead emits a signal with
-        the necessary information.
-        """
-        self.state.emit(self.name, 'loop', 'loop')
 
     # On application close
     ############################################################################

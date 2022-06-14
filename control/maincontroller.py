@@ -124,7 +124,8 @@ class MainController(QObject):
     #     if type == 'Image':
     #         self.new_data.emit(data)
 
-    def parse_signal(self, mw, device: str, parameter: str, val: str):
+    # def parse_signal(self, mw, device: str, parameter: str, val: str):
+    def parse_signal(self, device, param, val):
         """! Parse messages from the GUI and pass them to the appropriate
         devices."""
         # MainWindow emits a signal with a reference to GUI component, the device
@@ -133,22 +134,23 @@ class MainController(QObject):
         # response from the device
         # Each device case is handled by separate function
         # Can't use match-case because computer running software is too old
-        if device == 'global':
+        if device == 'Global':
             resp = self.global_control(parameter, val)
 
-        elif device == 'insight':
+        elif device == 'Insight':
+            resp = 'Insight: Not configured yet'
+
+        elif device == 'Delay Stage':
             resp = 'Not configured yet'
 
-        elif device == 'delaystage':
-            resp = 'Not configured yet'
-
-        elif device == 'zilockin':
+        elif device == 'Lockin':
             resp = 'Not configured yet'
 
         elif device == 'kcube':
             resp = 'Not configured yet'
 
-        mw.statusbar = resp
+        self.log.emit('Functionality not implemented. Request failed.')
+        # mw.statusbar = resp
 
 
     def global_control(self, parameter: str, val: str) -> str:

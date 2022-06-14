@@ -1,0 +1,7 @@
+# Delay Stage Controls
+$btn$ {Delay Stage On} {_on_btn} {_turnon} & $btn$ {Home} {_home_btn} {_home}
+$btn$ {Move Absolute} {_abs_mv_btn} {_abs_mv} & $form$ {_abs_mv_box}
+## Relative Move:
+$btn$ {<<} {_rel_neg_btn} {_rel_neg} & $form$ {_rel_mv_box} & $btn$ {>>} {_rel_pos_btn} {_rel_pos}
+$btn$ {Set Velocity} {_vel_set_btn} {_set_vel} & $form$ {_vel_set_box}
+$btn$ {Set Acceleration} {_accel_set_btn} {_set_accel} & $form$ {_accel_set_box}

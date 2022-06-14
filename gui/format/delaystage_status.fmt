@@ -1,0 +1,4 @@
+# Delay Stage Status
+Position: & *pos
+Velocity: & *vel
+Acceleration: & *accel

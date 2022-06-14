@@ -231,12 +231,13 @@ class ZiPanel(BasicPanel):
         pass
 
     def update_state(self, params):
-        self.sigin0_ac.setText(str(params['/dev1292/sigins/0/ac']))
-        self.sigin0_imp50.setText(str(params['/dev1292/sigins/0/imp50']))
-        self.sigin0_range.setText(str(params['/dev1292/sigins/0/range']))
-        self.sigin0_diff.setText(str(params['/dev1292/sigins/0/diff']))
-
-        self.sigin1_ac.setText(str(params['/dev1292/sigins/1/ac']))
-        self.sigin1_imp50.setText(str(params['/dev1292/sigins/1/imp50']))
-        self.sigin1_range.setText(str(params['/dev1292/sigins/1/range']))
-        self.sigin1_diff.setText(str(params['/dev1292/sigins/1/diff']))
+        # self.sigin0_ac.setText(str(params['/dev1292/sigins/0/ac']))
+        # self.sigin0_imp50.setText(str(params['/dev1292/sigins/0/imp50']))
+        # self.sigin0_range.setText(str(params['/dev1292/sigins/0/range']))
+        # self.sigin0_diff.setText(str(params['/dev1292/sigins/0/diff']))
+        #
+        # self.sigin1_ac.setText(str(params['/dev1292/sigins/1/ac']))
+        # self.sigin1_imp50.setText(str(params['/dev1292/sigins/1/imp50']))
+        # self.sigin1_range.setText(str(params['/dev1292/sigins/1/range']))
+        # self.sigin1_diff.setText(str(params['/dev1292/sigins/1/diff']))
+        pass

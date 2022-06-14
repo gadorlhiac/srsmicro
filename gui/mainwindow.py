@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
 
     ## @var gui_changed
     # (Signal) Emit GUI changes for parsing by the controller.
-    gui_changed: ClassVar[Signal] = Signal(object, str, str, str)
+    gui_changed: ClassVar[Signal] = Signal(object, object, object)
 
     ## @var log_changed
     # (Signal) Emit log changes for parsing by the result file.
@@ -216,15 +216,20 @@ class MainWindow(QMainWindow):
 
         ## @var _insight_panel
         # Contains Insight specific GUI elements
-        self._insight_panel = InsightPanel(hideTitle=True)
+        self._insight_panel = InsightPanel(hideTitle=True,
+                                           statpath='srsmicro/gui/format/insight_status.fmt',
+                                           ctrlpath='srsmicro/gui/format/insight_controls.ctrl')
         self._insight_panel.expmt_msg.connect(self.update_log)
+        self._insight_panel.param_change.connect(self.expmt_changed)
         self.data.connect(self._insight_panel.update_data)
         self.insight_logs.connect(self._insight_panel.update_log)
         self.insight_state.connect(self._insight_panel.update_state)
 
         ## @var _delaystage_panel
         # Contains delay stage specific GUI elements
-        self._delaystage_panel = DelayStagePanel(hideTitle=True)
+        self._delaystage_panel = DelayStagePanel(hideTitle=True,
+                                           statpath='srsmicro/gui/format/delaystage_status.fmt',
+                                           ctrlpath='srsmicro/gui/format/delaystage_controls.ctrl')
         self._delaystage_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._delaystage_panel.update_data)
         self.delaystage_logs.connect(self._delaystage_panel.update_log)
@@ -241,7 +246,9 @@ class MainWindow(QMainWindow):
         ## @var _fssrs_panel
         # Contains GUI elements for running a simple SRS experiment and
         # displaying the images/results
-        self._fssrs_panel = FemtoRamanPanel(hideTitle=True)
+        self._fssrs_panel = FemtoRamanPanel(hideTitle=True,
+                                           statpath='srsmicro/gui/format/fssrs_status.fmt',
+                                           ctrlpath='srsmicro/gui/format/fssrs_controls.ctrl')
         self._fssrs_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._fssrs_panel.update_data)
         self.fssrs_logs.connect(self._fssrs_panel.update_log)
@@ -326,11 +333,12 @@ class MainWindow(QMainWindow):
     def global_changed(self, obj, param, val):
         """! Emit a signal to be parsed by the controller."""
         parameter = str(obj).split('\'')[1]
-        self.gui_changed.emit(self, 'global', parameter, str(val))
+        self.gui_changed.emit('Global', parameter, str(val))
         self.update_log('{} changed to {}'.format(parameter, str(val)))
 
-    def expmt_changed(self, obj, param, val):
-        pass
+    def expmt_changed(self, device, param, val):
+        self.update_log('{} attempting to: {}'.format(device, param))
+        self.gui_changed.emit(device, param, val)
 
     # Logging and status bar
     ############################################################################
@@ -349,6 +357,7 @@ class MainWindow(QMainWindow):
         """
         self._logs.insertPlainText('{}: {}\n'.format(time.asctime(time.localtime(time.time())),
                                                     msg))
+        self.statusbar = msg
 
     # Menubar options and actions
     ############################################################################

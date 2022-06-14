@@ -1,0 +1,7 @@
+# Laser Status
+OPO Wavelength: & *opo_wl
+## DSM Settings
+DSM Min: & *dsm_min & DSM Postion: & *dsm_pos & DSM Max: & *dsm_max
+## Laser Diode Conditions
+Diode 1 Hours: & *d1_hrs & Diode 1 Current: & *d1_curr
+Diode 2 Hours: & *d2_hrs & Diode 2 Current: & *d2_curr
