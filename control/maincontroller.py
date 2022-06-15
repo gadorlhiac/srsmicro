@@ -46,6 +46,7 @@ class MainController(QObject):
         # Instance of the Insight device for controlling the laser.
         self._insight = Insight(name='Insight')
         self.insight_cmd.connect(self._insight.parse_cmd)
+        self._insight.cmd_result.connect(self.log)
 
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
@@ -64,7 +65,7 @@ class MainController(QObject):
         self._zi.state.connect(self.device_state)
 
         # Connect all devices' independent cmd_result Signals to the controller
-        self._insight.cmd_result.connect(self._read_result)
+        # self._insight.cmd_result.connect(self._read_result)
         self._delaystage.cmd_result.connect(self._read_result)
         self._zi.cmd_result.connect(self._read_result)
         # self.cmd_result = ''
@@ -152,7 +153,8 @@ class MainController(QObject):
         elif device == 'kcube':
             resp = 'Not configured yet'
 
-        self.log.emit('Functionality not implemented. Request failed.')
+        self.log.emit('Attempting {} command - {}: {}'.format(device, param, val))
+        # self.log.emit('Functionality not implemented. Request failed.')
         # mw.statusbar = resp
 
 

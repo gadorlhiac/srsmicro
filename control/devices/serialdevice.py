@@ -42,6 +42,7 @@ class SerialDevice(Device):
     def _open(self):
         """! Private function which opens communication over a serial port."""
         self._sercom.port = self.comport
+        self._sercom.baudrate = self.baudrate
         self._sercom.open()
 
     def _close(self):
@@ -55,7 +56,7 @@ class SerialDevice(Device):
         communication, preventing writing multiple commands before the
         device can respond.
         """
-        self._sercom.write(b'{}\n'.format(cmd))
+        self._sercom.write(bytes('{}\n'.format(cmd), encoding='utf8'))
         time.sleep(waittime)
 
     def read(self):
@@ -79,6 +80,7 @@ class SerialDevice(Device):
         @param val (int) Baud rate.
         """
         self._baudrate = val
+        self._sercom.baudrate = val
         # self.cmd_result = 'Baud rate set to: {}'.format(val)
 
     @property

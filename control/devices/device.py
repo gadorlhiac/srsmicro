@@ -68,7 +68,7 @@ class Device(QObject):
                 self.cmd_result.emit('Succesfully closed serial port.')
 
             except Exception as err:
-                self._logs += '{} Unable to close communication with {}: {}'.format(current_time, self.name, str(err))
+                self._logs += '{} Unable to close communication with {}: {}'.format(self.current_time, self.name, str(err))
                 self.cmd_result.emit('Unable to close serial port: {}'.format(str(err)))
         else:
             self._logs += '{} Cannot close communication with {}: not currently \

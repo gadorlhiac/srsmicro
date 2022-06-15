@@ -1,4 +1,4 @@
 # Laser Controls
 $btn$ {Laser On} {laseron_btn} {_turnon} & $btn$ {Alignment Mode} {alignmode_btn} {_alignmode}
 $btn$ {Main Shutter} {main_shutter_btn} {_main_shutter} & $btn$ {Fixed Shutter} {fixed_shutter_btn} {_fixed_shutter} ;
-$btn$ {Set Wavelength} {tunewl_btn} {_tunewl} & $form$ {_wl_box}
+$btn$ {Set Wavelength} {tunewl_btn} {_tunewl} & $form$ {wl_box}

@@ -25,9 +25,9 @@ if __name__ == '__main__':
 
     # Data and log management
     ############################################################################
-    result = ExperimentResult()
+    # result = ExperimentResult()
     # When logs are updated on GUI, update them in the result object
-    mw.log_changed.connect(result.write_logs)
+    # mw.log_changed.connect(result.write_logs)
 
 
     # Cleanup on shutdown

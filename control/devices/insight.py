@@ -69,6 +69,7 @@ class Insight(SerialDevice):
         Initiliazes comport (inherited from SerialDevice) to COM6
         """
         super().__init__(name)
+        self.baudrate=115200
         self.comport = 'COM6'
         # self._isconnected = False
         # self._cmd_result = ''
@@ -91,21 +92,28 @@ class Insight(SerialDevice):
         codes, and any current error codes. Also reads values such as humidity,
         current, and diode temperature.
         """
-        self.write('{}'.format(self.cmds['align']), self.comtime)
-        self._cond_vars['align'] = self.read()
+        # self.write('{}'.format(self.cmds['align']), self.comtime)
+        # self._cond_vars['align'] = self.read()
+        self._read_current_conditions()
+        try:
+            self.write('*STB?', self.comtime)
+            resp = int(self.read()).strip()
 
-        self.write('*STB?', self.comtime)
-        resp = int(self.read())
+            self._cond_vars['main_shutter'] = resp & 0x00000004
+            self._cond_vars['fixed_shutter'] = resp & 0x00000008
 
-        self._cond_vars['main_shutter'] = resp & 0x00000004
-        self._cond_vars['fixed_shutter'] = resp & 0x00000008
-
-        self._check_errors(resp)
-        # self._cond_vars['history'] = self._read_history()
-        self._read_history()
-        self._cond_vars['op_state'] = self._parse_op_state((resp >> 16))
-        # self._history = self._read_history()
-        # self._op_state = self._parse_op_state((resp >> 16))
+            self._check_errors(resp)
+            # self._cond_vars['history'] = self._read_history()
+            self._read_history()
+            self._cond_vars['op_state'] = self._parse_op_state((resp >> 16))
+            # self._history = self._read_history()
+            # self._op_state = self._parse_op_state((resp >> 16))
+        except:
+            self._cond_vars['main_shutter'] = 0
+            self._cond_vars['fixed_shutter'] = 0
+            self._cond_vars['op_state'] = 'Ready to turn on'
+            self._cond_vars['op_errors'] = 'Insight off'
+            self._cond_vars['history'] = 'Insight off'
 
     def _check_errors(self, state: str):
         self._cond_vars['op_errors'] = ''
@@ -165,27 +173,28 @@ class Insight(SerialDevice):
 
     def _read_current_conditions(self):
         for cmd in self._cond_vars:
-            self.write(b'{}?'.format(cmds[i]), self._comtime)
+            self.write('{}?'.format(cmds[i]), self._comtime)
             self._cond_vars[i] = self.read().strip()
 
     def parse_cmd(self, param, val):
         if param == 'op_state':
             if val == 'RUN':
-                self._cond_vars['op_state'] = 'RUN'
-            # if self._cond_vars['op_state'] == 'RUN':
-            #     self.write('OFF', self.comtime)
-            # else:
-            #     self.write('ON')
+                # self._cond_vars['op_state'] = 'RUN'
+                if self._cond_vars['op_state'] == 'RUN':
+                    self.write('OFF', self.comtime)
+                else:
+                    self.write('ON')
+                    self.cmd_result.emit('Turning laser on.')
         elif param == 'main_shutter':
             if self._cond_vars['main_shutter']:
-                self.write('{} 0'.format(self.cmds['main_shutter'], self.comtime))
+                self.write('{} 0'.format(self.cmds['main_shutter']), self.comtime)
             else:
-                self.write('{} 1'.format(self.cmds['main_shutter'], self.comtime))
+                self.write('{} 1'.format(self.cmds['main_shutter']), self.comtime)
         elif param == 'fixed_shutter':
             if self._cond_vars['fixed_shutter']:
-                self.write('{} 0'.format(self.cmds['main_shutter'], self.comtime))
+                self.write('{} 0'.format(self.cmds['main_shutter']), self.comtime)
             else:
-                self.write('{} 1'.format(self.cmds['main_shutter'], self.comtime))
+                self.write('{} 1'.format(self.cmds['main_shutter']), self.comtime)
         elif param == 'opo_wl':
             self.write('{}{}'.format(self.cmds['opo_wl'], val), self.comtime)
         elif param == 'align':
@@ -205,6 +214,8 @@ class Insight(SerialDevice):
     # On application close
     ############################################################################
     def exit(self):
-        if self._isconnected:
+        if self._cond_vars['op_state'] == 'RUN':
             self.write('OFF', self.comtime)
+        # if self._isconnected:
+        #     self.write('OFF', self.comtime)
         self.close()
