@@ -42,7 +42,6 @@ class InsightPanel(BasicPanel):
 
     def _update_controls(self, param, val):
         if param == 'op_state':
-            print(val)
             if val == 'RUN':
                 self.control_vars['laseron_btn'].setStyleSheet('background-color: red')
             else:
@@ -59,6 +58,6 @@ class InsightPanel(BasicPanel):
                 self.control_vars['fixed_shutter_btn'].setStyleSheet('background-color: light gray')
         elif param == 'align':
             if val == 'ALIGN':
-                self.control_vars['_alignmode_btn'].setStyleSheet('background-color: red')
+                self.control_vars['alignmode_btn'].setStyleSheet('background-color: red')
             else:
-                self.control_vars['_alignmode_btn'].setStyleSheet('background-color: light gray')
+                self.control_vars['alignmode_btn'].setStyleSheet('background-color: light gray')

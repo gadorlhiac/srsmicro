@@ -47,29 +47,6 @@ class DelayStage(SerialDevice):
 
     # State and error checking
     ############################################################################
-    def check_errors(self):
-        """! Check for command errors and also query state.
-        Errors are accessed through raising a CommandError exception. The class
-        definition for the exception contains the error code definitions.
-        """
-        try:
-            # Query what the last command error was and store it.
-            self.write(b'1TE', self.comtime)
-            resp = self.read()[3:].strip()
-
-            self._cond_vars['cmd_err'] = str(CommandError(resp))
-
-            # Raise error if response is other than '@' (no error)
-            if resp != '@':
-                raise CommandError(resp)
-
-        except CommandError as e:
-                    # self.cmd_result = 'Command error: {}'.format(str(e))
-            pass
-        except Exception as e:
-            # self.cmd_result = 'Error: {}'.format(str(e))
-            pass
-
     def _query_state(self):
         """! Query device state and parse any positioner errors.
         Errors are accessed through raising a PositionerError exception. The
@@ -79,7 +56,7 @@ class DelayStage(SerialDevice):
         self._read_current_conditions()
         try:
             # Query state which returns 6 characters
-            self.write(b'1TS', self.comtime)
+            self.write('1TS', self.comtime)
             resp = self.read()
 
             # The last two characters represent the delay stage state as a
@@ -108,36 +85,33 @@ class DelayStage(SerialDevice):
             self.cmd_result.emit('Error: {}'.format(str(e)))
             pass
 
+    def check_errors(self):
+        """! Check for command errors and also query state.
+        Errors are accessed through raising a CommandError exception. The class
+        definition for the exception contains the error code definitions.
+        """
+        try:
+            # Query what the last command error was and store it.
+            self.write('1TE', self.comtime)
+            resp = self.read()[3:].strip()
+
+            self._cond_vars['cmd_err'] = str(CommandError(resp))
+
+            # Raise error if response is other than '@' (no error)
+            if resp != '@':
+                raise CommandError(resp)
+
+        except CommandError as e:
+                    # self.cmd_result = 'Command error: {}'.format(str(e))
+            pass
+        except Exception as e:
+            # self.cmd_result = 'Error: {}'.format(str(e))
+            pass
+
     def _read_current_conditions(self):
         for cmd in self.cmds:
             self.write('{}?'.format(self.cmds[cmd]), self.comtime)
             self._cond_vars[cmd] = self.read()[3:].strip()
-    # def return_state(self):
-    #     pass
-
-    # def _read_status(self):
-    # """!
-    # Full status including operational state, history of error codes,
-    # and any current error codes. Also reads values such as humidity,
-    # current, and diode temperature.
-    # """
-    #     # Query current position, velocity, acceleration and any errors
-    #     for cmd in self._cond_vars.keys():
-    #         self.write('{}?'.format(cmd), self.comtime)
-    #         resp = self.read()[3:].strip()
-    #
-    #         if cmd == 'cmd_err':
-    #             self._cond_vars[cmd] = str(CommandError(resp))
-    #
-    #         elif cmd == 'pos_err':
-    #             self._cond_vars[cmd] = str(PositionerError(resp))
-    #
-    #         else:
-    #             self._cond_vars[cmd] = resp
-
-    # @property
-    # def status(self):
-    #     self._read_status()
 
     # Motion and parameter setting
     ############################################################################
@@ -152,12 +126,12 @@ class DelayStage(SerialDevice):
             if newpos < -100 or newpos > 100:
                 raise ValueError('Trying to move beyond the limits of the stage.')
             # Query the device to determine how long the relative move will take.
-            self.write(b'1PT{:.4f}'.format(val), self.comtime)
+            self.write('1PT{:.4f}'.format(val), self.comtime)
             t = float(self.read()[3:])
 
             # Move to the new position, using the time calculated above as the amount
             # of time to wait/block further communication.
-            self.write(b'1PR{:.4f}'.format(val), t + self.comtime)
+            self.write('1PR{:.4f}'.format(val), t + self.comtime)
             # self.cmd_result = self.read()
             self.cmd_result.emit(self.read())
 
@@ -166,7 +140,7 @@ class DelayStage(SerialDevice):
 
             # Double check the position by querying the delay stage again.
             # Update the _cond_vars dictionary appropriately.
-            self.write(b'1TP?', self.comtime)
+            self.write('1TP?', self.comtime)
             self._cond_vars['pos'] = self.read()[3:]
 
         except Exception as err:
@@ -191,6 +165,18 @@ class DelayStage(SerialDevice):
         except Exception as err:
             # self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
             self.cmd_result.emit('Delay stage not moved. {}.'.format(str(err)))
+
+    def parse_cmd(self, param, val):
+        if param == 'abs_move':
+            self._move_absolute(float(val))
+        elif param == 'rel_move_neg':
+            self._move_relative(-1*float(val))
+        elif param == 'rel_move_pos':
+            self._move_relative(float(val))
+        elif param == 'vel':
+            self.write('{}{}'.format(self.cmds['vel'], val))
+        elif param == 'accel':
+            self.write('{}{}'.format(self.cmds['accel'], val))
 
     # On application close
     ############################################################################

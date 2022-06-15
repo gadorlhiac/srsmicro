@@ -31,6 +31,10 @@ class MainController(QObject):
     # (Signal) Emitted with a message to be recorded on the GUIs log.
     insight_cmd = Signal(object, object)
 
+    ## @var log
+    # (Signal) Emitted with a message to be recorded on the GUIs log.
+    delaystage_cmd = Signal(object, object)
+
     def __init__(self):
         """! The MainController class constructor."""
         super().__init__()
@@ -51,6 +55,7 @@ class MainController(QObject):
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
         self._delaystage = DelayStage(name='Delay Stage')
+        self.delaystage_cmd.connect(self._delaystage.parse_cmd)
 
         ## @var _zi
         # Instance of the ZurichLockin device for controlling the lock-in amplifier.
@@ -83,7 +88,7 @@ class MainController(QObject):
         ## @var _reporter
         # Instance of a StatusReporter which takes a list of devices and queries
         # their state on a loop.
-        self._reporter = StatusReporter([self._insight, self._zi])
+        self._reporter = StatusReporter([self._insight, self._delaystage, self._zi])
         self._reporter.moveToThread(self._status_thread)
         self._status_thread.started.connect(self._reporter.query_state)
 
@@ -145,7 +150,7 @@ class MainController(QObject):
             self.insight_cmd.emit(param, val)
 
         elif device == 'Delay Stage':
-            resp = 'Not configured yet'
+            self.delaystage_cmd.emit(param, val)
 
         elif device == 'Lockin':
             resp = 'Not configured yet'

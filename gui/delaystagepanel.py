@@ -22,22 +22,22 @@ class DelayStagePanel(BasicPanel):
         super().__init__(*args, **kwargs)
 
     def _turnon(self):
-        pass
+        self.cmd.emit('Delay Stage', 'enable', 'RUN')
 
     def _home(self):
-        pass
+        self.cmd.emit('Delay Stage', 'home', 'RUN')
 
     def _abs_mv(self):
-        pass
+        self.cmd.emit('Delay Stage', 'abs_move', self.control_vars['abs_mv_box'].text())
 
     def _rel_neg(self):
-        pass
+        self.cmd.emit('Delay Stage', 'rel_move_neg', self.control_vars['rel_mv_box'].text())
 
     def _rel_pos(self):
-        pass
+        self.cmd.emit('Delay Stage', 'rel_move_pos', self.control_vars['rel_mv_box'].text())
 
     def _set_vel(self):
-        pass
+        self.cmd.emit('Delay Stage', 'vel', self.control_vars['vel_set_box'].text())
 
     def _set_accel(self):
-        pass
+        self.cmd.emit('Delay Stage', 'accel', self.control_vars['accel_set_box'].text())
