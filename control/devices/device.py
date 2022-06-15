@@ -114,20 +114,29 @@ class Device(QObject):
         except Exception as err:
             self.cmd_result.emit('Communication wait time not changed. Error: {}'.format(str(err)))
 
-    @property
-    def cond_vars(self):
-        """! Property for returning the device parameters and values."""
-        return self._cond_vars
+    # @property
+    # def cond_vars(self):
+    #     """! Property for returning the device parameters and values."""
+    #     return self._cond_vars
 
-    def emit_state(self):
+    def parse_cmd(self, param, val):
+        pass
+
+    def query_state(self):
         """! Performs device specific status queries. Intended for execution
         on a separate thread, so it can be run infinitely at given intervals.
-        Must be overloaded on a per device basis to account for differences in
-        communication syntax. Has no return value. Instead emits a signal with
-        the necessary information.
+        The associated private method should be overloaded on a per device basis
+        to account for differences in communication syntax. This method has no
+        return value. Instead the associated private method updates the
+        internally managed state and then a signal is emitted with new parameter
+        value pairs.
         """
+        self._query_state()
         self.state.emit(self.name, self._cond_vars)
         # print(self.name, self._cond_vars.keys(), self._cond_vars.values())
+
+    def _query_state(self):
+        pass
 
     @property
     def logs(self):

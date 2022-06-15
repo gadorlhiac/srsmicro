@@ -1,7 +1,8 @@
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from pyqtgraph.dockarea import Dock
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPlainTextEdit, QLineEdit
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QLabel, QPlainTextEdit,
+                             QLineEdit, QPushButton)
 from PyQt5.QtCore import pyqtSignal as Signal
 import pyqtgraph as pg
 import numpy as np
@@ -19,7 +20,7 @@ class BasicPanel(Dock):
 
     ## @var param_change
     # (Signal) Emit a parameter change attempt for controller/device processing.
-    param_change = Signal(object, object, object)
+    cmd = Signal(object, object, object)
 
     def __init__(self, *args, **kwargs):
         """! The BasicPanel constructor."""
@@ -163,7 +164,8 @@ class BasicPanel(Dock):
                             dispname = params[0]
                             varname = params[1]
                             funcname = params[2]
-                            btn = pg.FeedbackButton(dispname)
+                            btn = QPushButton(dispname)#pg.FeedbackButton(dispname)
+                            # btn.setText(dispname)
                             try:
                                 btn.clicked.connect(self.funcs[funcname])
                             except KeyError as err:
@@ -218,10 +220,18 @@ class BasicPanel(Dock):
         """! Slot to update status widgets.
         @param params Device parameters and the values to be displayed.
         """
+        for param in params:
+            if param in self.status_vars:
+                try:
+                    self.status_vars[param].setText('{:.3g}'.format(params[param]))
+                except ValueError as err:
+                    self.status_vars[param].setText('{}'.format(params[param]))
+            else:
+                self._update_controls(param, params[param])
+
+    def _update_controls(self, param, val):
         pass
 
-    # Device specific logging
-    ############################################################################
     def update_log(self, msg):
         """! Slot to update the device log.
         @param msg Text to be added to the log.

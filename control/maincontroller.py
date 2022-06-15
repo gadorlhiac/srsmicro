@@ -1,6 +1,8 @@
 from .devices.insight import Insight
 from .devices.delaystage import DelayStage
 from .devices.zurichlockin import ZurichLockin
+from .devices.zurichlockin import ZurichLockin
+# from .devices.pykcube import PyKcube
 from .statusreporter import StatusReporter
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
@@ -25,6 +27,10 @@ class MainController(QObject):
     # (Signal) Emitted with a message to be recorded on the GUIs log.
     log = Signal(str)
 
+    ## @var log
+    # (Signal) Emitted with a message to be recorded on the GUIs log.
+    insight_cmd = Signal(object, object)
+
     def __init__(self):
         """! The MainController class constructor."""
         super().__init__()
@@ -39,6 +45,7 @@ class MainController(QObject):
         ## @var _insight
         # Instance of the Insight device for controlling the laser.
         self._insight = Insight(name='Insight')
+        self.insight_cmd.connect(self._insight.parse_cmd)
 
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
@@ -47,8 +54,7 @@ class MainController(QObject):
         ## @var _zi
         # Instance of the ZurichLockin device for controlling the lock-in amplifier.
         self._zi = ZurichLockin(name='Lockin')
-        # self._zi = ZurichInstruments()
-        # self._kcube = PyKCube()
+        # self._kcube = PyKcube()
         # self._dmd = DMD()
 
         # Connect all devices' independent state Signals to the controllers
@@ -120,12 +126,8 @@ class MainController(QObject):
         if type == 'Image':
             self.data.emit(data)
 
-    # def parse_data(self, type, data):
-    #     if type == 'Image':
-    #         self.new_data.emit(data)
-
     # def parse_signal(self, mw, device: str, parameter: str, val: str):
-    def parse_signal(self, device, param, val):
+    def distribute_cmd(self, device, param, val):
         """! Parse messages from the GUI and pass them to the appropriate
         devices."""
         # MainWindow emits a signal with a reference to GUI component, the device
@@ -135,10 +137,11 @@ class MainController(QObject):
         # Each device case is handled by separate function
         # Can't use match-case because computer running software is too old
         if device == 'Global':
-            resp = self.global_control(parameter, val)
+            resp = self.global_control(param, val)
 
         elif device == 'Insight':
-            resp = 'Insight: Not configured yet'
+            # resp = 'Insight: Not configured yet'
+            self.insight_cmd.emit(param, val)
 
         elif device == 'Delay Stage':
             resp = 'Not configured yet'
@@ -159,14 +162,11 @@ class MainController(QObject):
         deprecated.
         """
         if parameter == 'Experiment Type':
-            print('Experiment Type Changed')
             resp = 'Experiment Type changed to: {}'.format(str(val))
         elif parameter == 'Insight COM Port':
             # self._insight.comport = resp
             resp = 'Insight COM Port changed to: {}'.format(str(val))
-
         elif parameter == 'Delay Stage COM Port':
-            print('Delay Stage COM Port Changed')
             resp = 'Delay Stage COM Port changed to: {}'.format(str(val))
         return resp
 

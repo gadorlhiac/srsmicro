@@ -19,19 +19,37 @@ class InsightPanel(BasicPanel):
                        '_fixed_shutter' : self._fixed_shutter,
                        '_tunewl' : self._tunewl }
         super().__init__(*args, **kwargs)
+        print(self.control_vars)
+        print(self.status_vars)
 
-    def _turnon(self):
+    def _turnon(self, *args):
         # self.expmt_msg.emit('Insight: Turning on')
-        self.param_change.emit('Insight', 'Turn on', 'On')
+        # self.control_vars['_laseron_btn'].setStyleSheet('background-color: blue')
+        # self.control_vars['_laseron_btn'].toggle()
+        self.cmd.emit('Insight', 'op_state', 'RUN')
 
     def _alignmode(self):
         self.expmt_msg.emit('Alignment mode')
 
     def _tunewl(self):
+        self.cmd.emit('Insight', 'opo_wl', self.control_vars['_wl_box'].text())
         self.expmt_msg.emit('Tuning OPO')
 
     def _main_shutter(self):
+        self.cmd.emit('Insight', 'main_shutter', 'ON')
         pass
 
     def _fixed_shutter(self):
+        self.cmd.emit('Insight', 'fixed_shutter', 'ON')
         pass
+
+    def _update_controls(self, param, val):
+        if param == 'op_state':
+            if val == 'RUN':
+                self.control_vars['_laseron_btn'].setStyleSheet('background-color: red')
+        if param == 'main_shutter':
+            if val:
+                self.control_vars['_main_shutter'].setStyleSheet('background-color: red')
+        elif param == 'fixed_shutter':
+            if val:
+                self.control_vars['_fixed_shutter'].setStyleSheet('background-color: red')

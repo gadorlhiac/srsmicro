@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # Signals/Slots for relaying GUI changes to controller, and device status
     # updates and data back to the GUI
     ############################################################################
-    mw.gui_changed.connect(controller.parse_signal)
+    mw.cmd.connect(controller.distribute_cmd)
     controller.log.connect(mw.update_log)
     controller.device_state.connect(mw.parse_state)
     controller.data.connect(mw.data)

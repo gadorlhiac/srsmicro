@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
 
     ## @var gui_changed
     # (Signal) Emit GUI changes for parsing by the controller.
-    gui_changed: ClassVar[Signal] = Signal(object, object, object)
+    cmd: ClassVar[Signal] = Signal(object, object, object)
 
     ## @var log_changed
     # (Signal) Emit log changes for parsing by the result file.
@@ -220,7 +220,7 @@ class MainWindow(QMainWindow):
                                            statpath='srsmicro/gui/format/insight_status.fmt',
                                            ctrlpath='srsmicro/gui/format/insight_controls.ctrl')
         self._insight_panel.expmt_msg.connect(self.update_log)
-        self._insight_panel.param_change.connect(self.expmt_changed)
+        self._insight_panel.cmd.connect(self.cmd)
         self.data.connect(self._insight_panel.update_data)
         self.insight_logs.connect(self._insight_panel.update_log)
         self.insight_state.connect(self._insight_panel.update_state)
@@ -237,7 +237,9 @@ class MainWindow(QMainWindow):
 
         ## @var _zi_panel
         # Contains lock-in amplifier specific GUI elements
-        self._zi_panel = ZiPanel(hideTitle=True)
+        self._zi_panel = ZiPanel(hideTitle=True,
+                                           statpath='srsmicro/gui/format/lockin_status.fmt',
+                                           ctrlpath='srsmicro/gui/format/lockin_controls.ctrl')
         self._zi_panel.expmt_msg.connect(self.update_log)
         self.data.connect(self._zi_panel.update_data)
         self.zi_logs.connect(self._zi_panel.update_log)
@@ -333,7 +335,7 @@ class MainWindow(QMainWindow):
     def global_changed(self, obj, param, val):
         """! Emit a signal to be parsed by the controller."""
         parameter = str(obj).split('\'')[1]
-        self.gui_changed.emit('Global', parameter, str(val))
+        self.cmd.emit('Global', parameter, str(val))
         self.update_log('{} changed to {}'.format(parameter, str(val)))
 
     def expmt_changed(self, device, param, val):

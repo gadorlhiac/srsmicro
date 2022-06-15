@@ -1,0 +1,17 @@
+# Zurich Instruments HFL2I Status
+## System Overview
+External Clock: & */dev1292/system/extclk
+## Oscillator Frequency
+Oscillator 0: & */dev1292/oscs/freq & Oscillator 1: & */dev1292/oscs/freq
+## Demodulator 0
+Using Signal In: & */dev1292/demods/0/adcselect & Low-pass Order: & */dev1292/demods/0/order & Time Constant: & */dev1292/demods/0/timeconstant
+Sampling Rate: & */dev1292/demods/0/rate & Using Oscillator: & */dev1292/demods/0/oscselect & Trigger: & */dev1292/demods/0/trigger
+## Demodulator 3
+Using Signal In: & */dev1292/demods/3/adcselect & Low-pass Order: & */dev1292/demods/3/order & Time Constant: & */dev1292/demods/3/timeconstant
+Sampling Rate: & */dev1292/demods/3/rate & Using Oscillator: & */dev1292/demods/3/oscselect & Trigger: & */dev1292/demods/3/trigger
+## Signal In 0
+Range (V): & */dev1292/sigins/0/range & AC Coupling: & */dev1292/sigins/0/ac & 50 Ohm Impedance: & */dev1292/sigins/0/imp50
+Differential Input: & */dev1292/sigins/0/diff
+## Signal In 1
+Range (V): & */dev1292/sigins/1/range & AC Coupling: & */dev1292/sigins/1/ac & 50 Ohm Impedance: & */dev1292/sigins/1/imp50
+Differential Input: & */dev1292/sigins/1/diff

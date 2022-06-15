@@ -34,6 +34,7 @@ class ZurichLockin(Device):
         # self._cond_vars_list, self._cond_vars = load_zi_yaml('srsmicro/control/devices/configuration/ziconfig.yaml')
         self._load_variables()
         # self._cond_vars['dwell'] = 1e-5
+        self.state.emit(self.name, self._cond_vars)
 
     # Loading, lock-in discovery and configuration functions
     ############################################################################
@@ -59,7 +60,7 @@ class ZurichLockin(Device):
         for i in range(len(self._cond_vars_list)):
             tmp = self._cond_vars_list[i]
             self._cond_vars[tmp[0]] = tmp[1]
-
+        # print(self._cond_vars)
     def _open(self):
         """! Run the ZI API discovery routine and attempt to start the lock-in
         amplifier server.
@@ -131,7 +132,7 @@ class ZurichLockin(Device):
 
         # Can try some clever comprehensions
         # dem = 'demods/{}'.format(demod)
-        # values = {'range': range, 'rate': rate, 'adcselect': sigin, 'order': order, 
+        # values = {'range': range, 'rate': rate, 'adcselect': sigin, 'order': order,
         #           'harmonic':harm, 'timeconstant':tc}
         # parameters = [[key, self._cond_vars[key]] for key in self._cond_vars if dem in key]
         # for p in parameters:

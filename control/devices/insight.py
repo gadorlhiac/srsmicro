@@ -14,6 +14,7 @@ class Insight(SerialDevice):
              'd2_curr': 'READ:PLASer:DIODe2:CURRent', # Operating current for diode 2
              'd2_hrs': 'READ:PLASer:DIODe2:HOURS', # Operating hours for diode 2
              'd2_temp': 'READ:PLASer:DIODe2:TEMPerature', # Diode 2 temperature
+             'humidity': 'READ:HUMidity',
              'dsm_max': 'CONT:SLMAX', # Maximum GVD compensation position for insight, given current wavelength
              'dsm_min': 'CONT:SLMIN', # Minimum GVD compensation position for insight, given current wavelength
              'dsm_pos': 'CONT:DSMPOS', # The current GVD compensation position for insight
@@ -25,10 +26,11 @@ class Insight(SerialDevice):
     # insight_off: 'OFF'
 
     ## @var fault_codes
-    # (dict[str]:str) Dictionary reference for numerical fault code meanings.
+    # (dict[str]:str) Dictionary reference for numerical fault code meanings
+    # when read using the read history command.
     fault_codes = {
                     '000': 'Normal operation.',
-                    '056': 'Fault: Hardware timeout. Notify SpectraPhysicsif it continues.',
+                    '056': 'Fault: Hardware timeout. Notify SpectraPhysics if it continues.',
                     '066': 'Fault: Software timeout. Speak with system operator.',
                     '088': 'Fault: Diode thermistor short. Contact SpectraPhysics.',
                     '089': 'Fault: Diode thermistor open. Contact SpectraPhysics.',
@@ -46,6 +48,17 @@ class Insight(SerialDevice):
                     '483': 'Fault: low FTO power. Try different wavelengths. Contact SpectraPhysics.'
                  }
 
+    ## @var op_errors
+    # (dict[hex]:str) Dictionary reference for operational errors read using the
+    # generic status command.
+    op_errors = { 0x00000200 : 'User interlock open. Laser forced off.',
+                  0x00000400 : 'Safety keyswitch interlock open. Laser forced off.',
+                  0x00000800 : 'Power supply interlock open. Laser forced off.',
+                  0x00001000 : 'Internal interlock open. Laser forced off.',
+                  0x00004000 : 'Detecting a warning. Check history for cause.',
+                  0x00008000 : 'Faul detected. Laser diodes turned off. Check history.',
+                }
+
     # cmd_result = Signal(str)
 
     def __init__(self, name='Insight'):
@@ -58,36 +71,47 @@ class Insight(SerialDevice):
         # self._cmd_result = ''
 
         # Status of laser and shutters (on, off, hibernating, etc)
-        self._op_state = 'Off'
-        self._main_shutter = 0
-        self._fixed_shutter = 0
+        # self._op_state = 'Off'
+        # self._main_shutter = 0
+        # self._fixed_shutter = 0
 
         self._cond_vars = dict.fromkeys(Insight.cmds.keys(), '-')
+        self._cond_vars['main_shutter'] = 0
+        self._cond_vars['fixed_shutter'] = 0
+        self._cond_vars['op_state'] = 'Ready to turn on'
         # self.name = name
 
     # Error checking
     ############################################################################
-    def _read_status(self):
-        """!
-        Full status including operational state, history of error codes,
-        and any current error codes. Also reads values such as humidity,
+    def _query_state(self):
+        """! Read the full status including operational state, history of error
+        codes, and any current error codes. Also reads values such as humidity,
         current, and diode temperature.
         """
-        self.write(b'*STB?', self._comtime)
+        self.write('*STB?', self.comtime)
         resp = int(self.read())
 
-        self._main_shutter = resp & 0x00000004
-        self._fixed_shutter = resp & 0x00000008
+        self._cond_vars['main_shutter'] = resp & 0x00000004
+        self._cond_vars['fixed_shutter'] = resp & 0x00000008
 
-        err_codes = self._check_errors(resp)
-        self._history = self._read_history()
-        self._op_state = self._parse_op_state((resp >> 16))
+        self._check_errors(resp)
+        # self._cond_vars['history'] = self._read_history()
+        self._read_history()
+        self._cond_vars['op_state'] = self._parse_op_state((resp >> 16))
+        # self._history = self._read_history()
+        # self._op_state = self._parse_op_state((resp >> 16))
 
-    def _check_errors(self, s: str):
-        # Bit masks for parsing insight laser state
-        masks = [0x00000200, 0x00000400, 0x00000800, 0x00001000, 0x00004000,
-                 0x00008000]
-        err_codes = [bool(s & mask) for mask in masks]
+    def _check_errors(self, state: str):
+        self._cond_vars['op_errors'] = ''
+        found_error = False
+        for key in self.op_errors:
+            if (state & key):
+                self._cond_vars['op_errors'] += self.op_errors[key]
+                self.cmd_result.emit('Insight: {}'.format(self.op_errors[key]))
+                found_error = True
+        if not found_error:
+            self._cond_vars['op_errors'] = 'None'
+            self.cmd_result.emit('Insight: Checked for errors. None found.')
 
     def _read_history(self):
         """! Reads error code history from the insight startup buffer"""
@@ -96,18 +120,18 @@ class Insight(SerialDevice):
         # Appendix B, where the codes are explained is correct:
         # 'READ:AHIS?'
         try:
-            self.write(b'READ:AHIS?', self.status['com_time'])
+            self.write('READ:AHIS?', self.comtime)
             codes = self.read().strip().split(' ')
             history = ''
             for code in codes:
                 history += '{}: {}\n'.format(code, self.fault_codes[code])
 
-            self._status['history'] = history
-            # self.cmd_result = 'Read from history buffer. Appended to logs.'
+            self._cond_vars['history'] = history
+            self.cmd_result = 'Read from history buffer. Appended to logs.'
         except Exception as e:
             err = 'Error while reading history: {}'.format(str(e))
-            self._status['history'] = err
-            self._status['last_action'] = err
+            self._cond_vars['history'] = err
+            self.cmd_result.emit(err)
 
     # Current laser status
     def _parse_op_state(self, resp: int) -> str:
@@ -138,9 +162,30 @@ class Insight(SerialDevice):
             self.write(b'{}?'.format(cmds[i]), self._comtime)
             self._cond_vars[i] = self.read().strip()
 
-    @property
-    def cond_vars(self) -> dict:
-        return self._cond_vars
+    def parse_cmd(self, param, val):
+        if param == 'op_state':
+            if val == 'RUN':
+                self._cond_vars['op_state'] = 'RUN'
+            # if self._cond_vars['op_state'] == 'RUN':
+            #     self.write('OFF', self.comtime)
+            # else:
+            #     self.write('ON')
+        elif param == 'main_shutter':
+            if self._cond_vars['main_shutter']:
+                self.write('{} 0'.self.cmds['main_shutter'], self.comtime)
+            else:
+                self.write('{} 1'.self.cmds['main_shutter'], self.comtime)
+        elif param == 'fixed_shutter':
+            if self._cond_vars['fixed_shutter']:
+                self.write('{} 0'.self.cmds['main_shutter'], self.comtime)
+            else:
+                self.write('{} 1'.self.cmds['main_shutter'], self.comtime)
+        elif param == 'opo_wl':
+            print(val)
+
+    # @property
+    # def cond_vars(self) -> dict:
+    #     return self._cond_vars
 
     # def return_state(self):
     #     pass
