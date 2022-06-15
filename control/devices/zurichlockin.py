@@ -9,10 +9,7 @@ from .zurichdaq import ZurichDaq
 # from srsmicro.utilities.conversions import load_zi_yaml
 import zhinst.ziPython as ziPython
 from PyQt5.QtCore import QObject, QThread
-from PyQt5."""!
-@brief Definition of the StatusReporter class which is intended as a worker
-on a separate thread for reporting device status updates.
-"""QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
 import yaml
 

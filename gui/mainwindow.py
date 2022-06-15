@@ -380,31 +380,32 @@ class MainWindow(QMainWindow):
         self.setMenuBar(self._menubar)
         self._create_filemenu()
         self._menubar.addMenu(self._filemenu)
+        self._create_routinesmenu()
+        self._menubar.addMenu(self._routinesmenu)
 
     def _create_filemenu(self):
         """! Create the 'File' menu to be added to the menubar."""
         ## @var _filemenu
         # Contains general options for the experiment and display.
-        self._filemenu: QMenu = QMenu('&File', self)
+        self._filemenu: QMenu = QMenu('File', self)
 
         ## @var _open_act
         # QAction for the _filemenu open option. Not in use.
-        self._open_act: QAction = QAction('&Open', self)
+        self._open_act: QAction = QAction('Open', self)
         self._open_act.setStatusTip('Open Previous Project')
         self._open_act.triggered.connect(self._openfile)
 
         ## @var _save_im_act
         # QAction for the _filemenu Save Image option. Not in use.
-        self._save_im_act: QAction = QAction('&Save Image', self)
+        self._save_im_act: QAction = QAction('Save Image', self)
         self._save_im_act.setStatusTip('Save Current Image')
         self._save_im_act.triggered.connect(self._saveim)
 
         ## @var _save_state
         # QAction for the _filemenu Save ZI State option
-        self._save_zistate_act: QAction = QAction('&Save ZI State', self)
+        self._save_zistate_act: QAction = QAction('Save ZI State', self)
         self._save_zistate_act.setStatusTip('Save ZI Parameter Settings to File')
         self._save_zistate_act.triggered.connect(self._savezistate)
-
 
         ## @var _console_act
         # QAction for the _filemenu Console option. Toggles display of the
@@ -415,6 +416,7 @@ class MainWindow(QMainWindow):
                                       'irreperable damage.'))
         self._console_act.setStatusTip('Open or Close the Console')
         self._console_act.triggered.connect(self._toggleconsole)
+        self._console_act.setShortcut('Alt+C')
 
         # Add all options to the menu.
         self._filemenu.addAction(self._open_act)
@@ -426,6 +428,35 @@ class MainWindow(QMainWindow):
         # Show mouse hover tool tips.
         self._filemenu.setToolTipsVisible(True)
 
+    def _create_routinesmenu(self):
+        """! Create the 'Routines' menu to be added to the menubar."""
+        ## @var _routinesmenu
+        # Contains options for running useful functions for generating data
+        # that supports or augments experimental data.
+        self._routinesmenu: QMenu = QMenu('Routines', self)
+
+        ## @var _t0_act
+        # QAction for selecting to run a time-zero calibration of laser temporal
+        # coincidence.
+        self._t0_act: QAction = QAction('&T0 Calibration', self)
+        self._t0_act.setStatusTip('Run a time-zero calibration.')
+        self._t0_act.triggered.connect(self._t0)
+        self._t0_act.setShortcut('Alt+T')
+
+        ## @var _t0_act
+        # QAction for selecting to run a time-zero calibration of laser temporal
+        # coincidence.
+        self._specscan_act: QAction = QAction('Scan Spectrum', self)
+        self._specscan_act.setStatusTip('With chirped lasers run collect a spectrum.')
+        self._specscan_act.triggered.connect(self._specscan)
+
+        # Add all options to the menu.
+        self._routinesmenu.addAction(self._t0_act)
+        self._routinesmenu.addAction(self._specscan_act)
+
+        # Show mouse hover tool tips.
+        self._routinesmenu.setToolTipsVisible(True)
+
     def _openfile(self):
         """! Open a file. Not currently in use."""
         pass
@@ -434,6 +465,21 @@ class MainWindow(QMainWindow):
         pass
     def _savezistate(self):
         """! Save a configuration/state. Not currently in use."""
+        pass
+
+    def _t0(self):
+        """! Run a time-zero calibration.
+        @todo Implement the signal parsing and multi-device coordination needed
+        to produce a time-zero calibration.
+        @todo Implement a storing mechanism for time-zero data.
+        """
+        pass
+
+    def _specscan(self):
+        """! Collect a spectrum using chirped lasers.
+        @todo Implement the signal parsing and multi-device coordination needed
+        to collect a chirped-laser spectrum.
+        """
         pass
 
     # Application close and cleanup
