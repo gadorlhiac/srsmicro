@@ -1,9 +1,18 @@
+"""!
+@brief Definition of the ZurichLockin class for interaction with the Zurich
+Instruments HF2LI lock-in amplifier as well as custom exception classes APIError
+and DeviceNotFoundError for zhinst API errors.
+"""
+
 from .device import Device
 from .zurichdaq import ZurichDaq
 # from srsmicro.utilities.conversions import load_zi_yaml
 import zhinst.ziPython as ziPython
 from PyQt5.QtCore import QObject, QThread
-from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5."""!
+@brief Definition of the StatusReporter class which is intended as a worker
+on a separate thread for reporting device status updates.
+"""QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
 import yaml
 
@@ -16,7 +25,7 @@ import yaml
 # _cond_vars is a list of list as opposed to
 
 class ZurichLockin(Device):
-    """The base class for the ZI HFL2I lock-in amplifier.
+    """! The base class for the ZI HF2LI lock-in amplifier.
 
     Uses a separate server for communication through ZI's provided API. For
     simplicity, and reproducibility, ZI API calls are handled behind the scenes,
@@ -437,7 +446,7 @@ class ZurichLockin(Device):
 # Exception error classes
 ############################################################################
 class DeviceNotFound(Exception):
-    """Exception class when unable to find Lockin devices connected."""
+    """! Exception class when unable to find Lockin devices connected."""
     def __init__(self, msg):
         """! DeviceNotFound class initializer.
         @param msg (str) Additional message to include.
@@ -451,7 +460,7 @@ class DeviceNotFound(Exception):
         return self.msg
 
 class APIError(Exception):
-    """Exception class for errors due to ZI API"""
+    """! Exception class for errors due to ZI API"""
     def __init__(self, msg):
         """! APIError class initializer.
         @param msg (str) Additional message to include.

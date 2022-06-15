@@ -1,10 +1,15 @@
+"""!
+@brief Definition of the StatusReporter class which is intended as a worker
+on a separate thread for reporting device status updates.
+"""
+
 from PyQt5.QtCore import QThread, QObject
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
 import time
 
 class StatusReporter(QObject):
-    """Worker class for device status querying.
+    """! Worker class for device status querying.
 
     Executes query functions for every device reference it is passed.
     """
@@ -19,6 +24,10 @@ class StatusReporter(QObject):
         ## @var devices
         # (list) List of device references. Used only for querying status.
         self.devices = devices
+
+        ## @var pause
+        # (bool) Variable to block device status queries. Set to true while the
+        # controller/device object is communicating with the physical device.
         self.pause = False
 
     def query_state(self):
@@ -38,5 +47,4 @@ class StatusReporter(QObject):
         @param device (Device) The device object to be added to the list.
         """
         self.devices.append(device)
-        device.state.connect(self.parse_status)
         self.pause = False

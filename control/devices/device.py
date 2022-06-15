@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 import time
 
 class Device(QObject):
-    """The base device class.
+    """! The base device class.
 
     Provides basic interface for interacting with device parameters, logging,
     and using Qt Signals and Slots.
@@ -120,6 +120,9 @@ class Device(QObject):
     #     return self._cond_vars
 
     def parse_cmd(self, param, val):
+        """! This function is overwritten by subclasses to perform the actions
+        appropriately upon parsing messages from the GUI.
+        """
         pass
 
     def query_state(self):

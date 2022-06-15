@@ -1,3 +1,9 @@
+"""!
+@brief Definition of the ZiPanel class for providing the necessary GUI
+elements for interacting with the Zurich Instruments HF2LI lock-in amplifier.
+"""
+
+
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import (QMenu, QMenuBar, QStatusBar, QMainWindow,
                              QStatusBar, QAction, QGridLayout, QLabel, QWidget,
@@ -13,6 +19,13 @@ from .basicpanel import BasicPanel
 # class InsightPanel(BasicPanel):
 class ZiPanel(BasicPanel):
     def __init__(self, *args, **kwargs):
+        """! The ZiPanel constructor.
+        @param statpath (str) The path to the text file containing the GUI's
+        status elements. These elements only display information.
+        @param ctrlpath (str) The path to the text file containing the GUI's
+        control elements. These elements allow interaction with the associated
+        device.
+        """
         self.funcs = {}
         super().__init__(*args, **kwargs)
         # self._cond_vars = {}

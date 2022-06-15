@@ -7,7 +7,7 @@ from .serialdevice import SerialDevice
 from PyQt5.QtCore import pyqtSignal as Signal
 
 class DelayStage(SerialDevice):
-    """The DelayStage class for controlling the Newport FCL200 delay stage.
+    """! The DelayStage class for controlling the Newport FCL200 delay stage.
     Extends the SerialDevice class with device specific methods and variables.
     """
     ## @var _controller_state
@@ -191,7 +191,8 @@ class DelayStage(SerialDevice):
 ################################################################################
 
 class PositionerError(Exception):
-    """Exception class for positioner errors for the Newport FCL200 delay stage.
+    """! Exception class for positioner errors for the Newport FCL200 delay
+    stage.
     """
     ## @var _pos_errors
     # (list[str]:str) String definitions for given integer error codes. The definition is returned by using the error code as the index on the list.
@@ -237,7 +238,7 @@ class PositionerError(Exception):
 ################################################################################
 
 class CommandError(Exception):
-    """Exception class for command errors for the Newport FCL200 delay stage.
+    """! Exception class for command errors for the Newport FCL200 delay stage.
     """
     ## @var _cmd_errors
     # (dict[str]:str) String definitions for given command error codes. Command errors are given as characters which are the keys of the dictionary.

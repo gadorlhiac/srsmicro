@@ -1,3 +1,8 @@
+"""!
+@brief The main GUI application entry point managing the top level GUI,
+controller, and data object instances and their Signal/Slot connections.
+"""
+
 from PyQt5 import QtGui, QtWidgets
 from gui.mainwindow import MainWindow
 import sys

@@ -1,3 +1,8 @@
+"""!
+@brief Definition of the SampleStage class for interaction with the Prior
+Scientific sample XY stage.
+"""
+
 #! /usr/bin/env python
 
 import numpy as np
@@ -9,7 +14,7 @@ from .device import *
 
 
 class SampleStage(SerialDevice):
-    """
+    """!
     Facilitates serial communication with Prior Scientific sample stage.
     Sample stage is needed for Y-dimension motion while acquiring hyperspectral
     images, to avoid scanning spectrum across Y.

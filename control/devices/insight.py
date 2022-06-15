@@ -1,8 +1,13 @@
+"""!
+@brief Definition of the Insight class for interacting with the Insight DS+
+femtosecond laser.
+"""
+
 from .serialdevice import SerialDevice
 from PyQt5.QtCore import pyqtSignal as Signal
 
 class Insight(SerialDevice):
-    """The Insight class for controlling the SpectraPhysics Insight DS+ femtosecond laser/OPO.
+    """! The Insight class for controlling the SpectraPhysics Insight DS+ femtosecond laser/OPO.
     Extends the SerialDevice class with device specific methods and variables.
     """
     ## @var cmds

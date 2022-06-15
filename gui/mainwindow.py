@@ -1,3 +1,9 @@
+"""!
+@brief Definition of the MainWindow class for organization and arrangement of
+all GUI elements. Serves as the contact point for communication with the
+controller/devices.
+"""
+
 import sys
 import time
 import __main__

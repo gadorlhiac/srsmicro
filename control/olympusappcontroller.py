@@ -1,7 +1,17 @@
+"""!
+@brief Definition of the OlympusAppController class which has hard-coded routines
+for managing the proprietary FV1200 Olympus software, without user input.
+"""
+
 import pyautogui
 
 class OlympusAppController():
+    """The OlympusAppController class for provides tools for controlling the
+    proprietary Olympus FV1200 software without user input. The software must be
+    running, but this class facilitates its blind manipulation.
+    """
     def __init__(self):
+        """! The OlympusAppController constructor."""
         # Status variables - maybe turn to a status dict like devices
         self._brightfield = False
         self._pixeldwell = 10
@@ -14,11 +24,11 @@ class OlympusAppController():
         self._focus_on = True
 
     def toggle_fvbutton(self, x, y):
-        """
-        Click buttons on FV1200 software GUI.
-        Args:
-            x (int) : x position of button on screen.
-            y (int) : y position of button on screen.
+        """! Function to click buttons on FV1200 software GUI. Controls
+        switching between open applications to select the FV1200 GUI and then
+        return to the calling software.
+        @param x (int) x position of the button on screen.
+        @param y (int) y position of the button on screen.
         """
         pyautogui.hotkey('alt', 'tab')
         pyautogui.moveTo(x, y)
@@ -26,19 +36,20 @@ class OlympusAppController():
         pyautogui.hotkey(x, y)
 
     def toggle_brightfield(self):
-        """
-        Move mouse to FV1200 software and toggle between brightfield vs scan
-        settings.
-        """
+        """! Function to toggle between brightfield and laser scanning modes."""
         self.toggle_fvbutton(x = 346, y = 116)
         self._brightfield = not self._brightfield
 
     def set_scan_type(self, mode, n=1):
+        """! Function to toggle between different laser scanning modes.
+        @param mode (str) Indicates the type of scanning mode to use. (xy, xyz
+        xyt, xyzt)
+        """
         self._mode = mode
         self._nframes = n
-        if mode == 'depth':
+        if mode == 'xyz':
             self.toggle_fvbutton(x = 588, y = 167)
-        elif mode == 'time':
+        elif mode == 'xyt':
             self.toggle_fvbutton(x = 635, y = 167)
 
 

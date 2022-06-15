@@ -1,3 +1,8 @@
+"""!
+@brief Definition of the BasicPanel class for providing the parsing functions to
+populate device specific GUI panels.
+"""
+
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from pyqtgraph.dockarea import Dock
@@ -23,7 +28,13 @@ class BasicPanel(Dock):
     cmd = Signal(object, object, object)
 
     def __init__(self, *args, **kwargs):
-        """! The BasicPanel constructor."""
+        """! The BasicPanel constructor.
+        @param statpath (str) The path to the text file containing the GUI's
+        status elements. These elements only display information.
+        @param ctrlpath (str) The path to the text file containing the GUI's
+        control elements. These elements allow interaction with the associated
+        device.
+        """
         super().__init__('Experiment Panel', *args, hideTitle=kwargs['hideTitle'])
 
         ## @var h1font
@@ -94,6 +105,12 @@ class BasicPanel(Dock):
     # Parse text to GUI elements
     ############################################################################
     def _status_widgets(self, path):
+        """! Parses a provided text file (.fmt extension) to populate the status
+        GUI elements. Saves the elements in the object's status_vars variable
+        allowing them to be updated automatically based upon the associated
+        device's status.
+        @param path (str) Path to the format file.
+        """
         widget = QWidget()
         layout = QGridLayout()
         row = 0
@@ -135,6 +152,14 @@ class BasicPanel(Dock):
         return widget
 
     def _control_widgets(self, path, funcs):
+        """! Parses a provided text file (.ctrl extension) to populate the control
+        GUI elements. Saves the elements in the object's control_vars variable
+        allowing them to be updated automatically based upon the associated
+        device's status. Associates functions to the GUI elements.
+        @param path (str) Path to the format file.
+        @param funcs (dict) Dictionary of str:method pairs associating function
+        names written in the text file to the actual python methods.
+        """
         widget = QWidget()
         layout = QGridLayout()
         row = 0
@@ -192,30 +217,8 @@ class BasicPanel(Dock):
         widget.setLayout(layout)
         return widget
 
-    # Logging and methods to update display
+    # Methods for updating GUI display - may be overwritten by subclasses
     ############################################################################
-    def _log_widget(self):
-        """! A widget to maintain device specific logging information. This can
-        include more detailed information (such as specific hardware failures)
-        than the more general experiment logs.
-        """
-        ## @var _log
-        # The GUI element that maintains the log. Its content can be written to
-        # a file.
-        self._log_label: QLabel = QLabel('Experiment Logs')
-        self._log_label.setAlignment(Qt.AlignCenter)
-        self._logs: QPlainTextEdit = QPlainTextEdit()
-        return self._logs
-
-    def _display_widget(self):
-        pass
-
-    def update_data(self, data):
-        """! Slot to update display upon receipt of new data.
-        @param data The new data to be displayed.
-        """
-        pass
-
     def update_state(self, params):
         """! Slot to update status widgets.
         @param params Device parameters and the values to be displayed.
@@ -230,7 +233,36 @@ class BasicPanel(Dock):
                 self._update_controls(param, params[param])
 
     def _update_controls(self, param, val):
+        """! Private, device specific, function called by the update_state slot
+        to perform updating of control GUI elements. This allows changing the
+        display of those elements to provide additional information to that
+        provided by the status elements. E.g button colors or toggling for
+        indicating activation.
+        @param param The parameter from the associated device.
+        @val The value of that parameter.
+        """
         pass
+
+    def update_data(self, data):
+        """! Slot to update display upon receipt of new data.
+        @param data The new data to be displayed.
+        """
+        pass
+
+    # Logging methods
+    ############################################################################
+    def _log_widget(self):
+        """! A widget to maintain device specific logging information. This can
+        include more detailed information (such as specific hardware failures)
+        than the more general experiment logs.
+        """
+        ## @var _log
+        # The GUI element that maintains the log. Its content can be written to
+        # a file.
+        self._log_label: QLabel = QLabel('Experiment Logs')
+        self._log_label.setAlignment(Qt.AlignCenter)
+        self._logs: QPlainTextEdit = QPlainTextEdit()
+        return self._logs
 
     def update_log(self, msg):
         """! Slot to update the device log.
@@ -238,3 +270,6 @@ class BasicPanel(Dock):
         """
         self._logs.insertPlainText('{}: {}\n'.format(time.asctime(time.localtime(time.time())),
                                                     msg))
+
+        def _display_widget(self):
+            pass

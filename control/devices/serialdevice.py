@@ -9,7 +9,7 @@ from serial import Serial
 import time
 
 class SerialDevice(Device):
-    """The base class for serial devices.
+    """! The base class for serial devices.
 
     Defines the base class used by devices whose serial communication is managed
     directly. Currently includes:

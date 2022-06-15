@@ -1,3 +1,8 @@
+"""!
+@brief Definition of the ZurichDaq class for managing the dataAcquistionModule
+for the ZI API asynchronously.
+"""
+
 import zhinst.ziPython as ziPython
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal as Signal
@@ -5,7 +10,7 @@ import time
 import numpy as np
 
 class ZurichDaq(QObject):
-    """The class for managing the Lock-in amplifier's data acquisition module.
+    """! The class for managing the Lock-in amplifier's data acquisition module.
     Intended for management on a background thread. Multiple ZurichDaqs can be
     created to sample from different data streams. Wraps the DAQ module from
     the ZI API for smoother integration with the Qt framework.
