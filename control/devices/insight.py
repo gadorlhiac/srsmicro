@@ -20,10 +20,13 @@ class Insight(SerialDevice):
              'dsm_pos': 'CONT:DSMPOS', # The current GVD compensation position for insight
              'fixed_shutter': 'IRSHUTter', # Open/close 1040 nm shutter
              'main_shutter': 'SHUTter', # Open/close main (OPO) shutter
-             'opo_wl': 'WAVelength' # OPO wavelength
+             'opo_wl': 'WAVelength', # OPO wavelength
+             'align' : 'MODE'
            }
     # insight_on: 'ON'
     # insight_off: 'OFF'
+    # align_mode: 'ALIGN'
+    # run_mode: 'RUN'
 
     ## @var fault_codes
     # (dict[str]:str) Dictionary reference for numerical fault code meanings
@@ -88,6 +91,9 @@ class Insight(SerialDevice):
         codes, and any current error codes. Also reads values such as humidity,
         current, and diode temperature.
         """
+        self.write('{}'.format(self.cmds['align']), self.comtime)
+        self._cond_vars['align'] = self.read()
+
         self.write('*STB?', self.comtime)
         resp = int(self.read())
 
@@ -172,16 +178,22 @@ class Insight(SerialDevice):
             #     self.write('ON')
         elif param == 'main_shutter':
             if self._cond_vars['main_shutter']:
-                self.write('{} 0'.self.cmds['main_shutter'], self.comtime)
+                self.write('{} 0'.format(self.cmds['main_shutter'], self.comtime))
             else:
-                self.write('{} 1'.self.cmds['main_shutter'], self.comtime)
+                self.write('{} 1'.format(self.cmds['main_shutter'], self.comtime))
         elif param == 'fixed_shutter':
             if self._cond_vars['fixed_shutter']:
-                self.write('{} 0'.self.cmds['main_shutter'], self.comtime)
+                self.write('{} 0'.format(self.cmds['main_shutter'], self.comtime))
             else:
-                self.write('{} 1'.self.cmds['main_shutter'], self.comtime)
+                self.write('{} 1'.format(self.cmds['main_shutter'], self.comtime))
         elif param == 'opo_wl':
-            print(val)
+            self.write('{}{}'.format(self.cmds['opo_wl'], val), self.comtime)
+        elif param == 'align':
+            if self._cond_vars['align'] == 'RUN':
+                self.write('{} ALIGN'.format(self.cmds['align'], val), self.comtime)
+            else:
+                self.write('{} RUN'.format(self.cmds['align'], val), self.comtime)
+
 
     # @property
     # def cond_vars(self) -> dict:

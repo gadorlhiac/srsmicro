@@ -29,6 +29,7 @@ class InsightPanel(BasicPanel):
         self.cmd.emit('Insight', 'op_state', 'RUN')
 
     def _alignmode(self):
+        self.cmd.emit('Insight', 'align', 'clicked')
         self.expmt_msg.emit('Alignment mode')
 
     def _tunewl(self):
@@ -46,10 +47,15 @@ class InsightPanel(BasicPanel):
     def _update_controls(self, param, val):
         if param == 'op_state':
             if val == 'RUN':
-                self.control_vars['_laseron_btn'].setStyleSheet('background-color: red')
+                self.control_vars['laseron_btn'].setStyleSheet('background-color: red')
         if param == 'main_shutter':
             if val:
-                self.control_vars['_main_shutter'].setStyleSheet('background-color: red')
+                self.control_vars['main_shutter_btn'].setStyleSheet('background-color: red')
         elif param == 'fixed_shutter':
             if val:
-                self.control_vars['_fixed_shutter'].setStyleSheet('background-color: red')
+                self.control_vars['fixed_shutter_btn'].setStyleSheet('background-color: red')
+        elif param == 'align':
+            if val == 'ALIGN':
+                self.control_vars['_alignmode_btn'].setStyleSheet('background-color: red')
+            else:
+                pass
