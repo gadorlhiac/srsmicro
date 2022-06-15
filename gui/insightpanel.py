@@ -19,8 +19,6 @@ class InsightPanel(BasicPanel):
                        '_fixed_shutter' : self._fixed_shutter,
                        '_tunewl' : self._tunewl }
         super().__init__(*args, **kwargs)
-        print(self.control_vars)
-        print(self.status_vars)
 
     def _turnon(self, *args):
         # self.expmt_msg.emit('Insight: Turning on')
@@ -44,6 +42,7 @@ class InsightPanel(BasicPanel):
 
     def _update_controls(self, param, val):
         if param == 'op_state':
+            print(val)
             if val == 'RUN':
                 self.control_vars['laseron_btn'].setStyleSheet('background-color: red')
             else:

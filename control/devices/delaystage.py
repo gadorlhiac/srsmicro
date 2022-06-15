@@ -28,7 +28,9 @@ class DelayStage(SerialDevice):
                           '34' : 'READY from DISABLE.',
                           '3C' : 'DISABLE from READY.',
                           '3D' : 'DISABLE from MOVING.' }
-
+    cmds = { 'pos' : '1TP',
+             'vel' : '1VA',
+             'accel' : '1AC' }
     # cmd_result = Signal(str)
 
     def __init__(self, name='Delay Stage'):
@@ -41,7 +43,7 @@ class DelayStage(SerialDevice):
         ## @var _cond_vars
         # (dict[str]:str) Holds current delay stage conditions. Keys: pos, vel, accel, cmd_err, pos_err
         self._cond_vars = {'pos':'', 'vel':'', 'accel':'',
-                           'cmd_err': 'No Error.', 'pos_err' : '', 'state': ''}
+                           'cmd_err': 'No Error.', 'pos_err' : '', 'op_state': ''}
 
     # State and error checking
     ############################################################################
@@ -73,6 +75,8 @@ class DelayStage(SerialDevice):
         Errors are accessed through raising a PositionerError exception. The
         class definition for the exception contains the error code definitions.
         """
+        self.check_errors()
+        self._read_current_conditions()
         try:
             # Query state which returns 6 characters
             self.write(b'1TS', self.comtime)
@@ -82,7 +86,7 @@ class DelayStage(SerialDevice):
             # hexadecimal number, but no processing is required. The state is
             # read directly from the class variable _controller_state defined
             # above.
-            self._cond_vars['state'] = self._controller_state[resp[7:9]]
+            self._cond_vars['op_state'] = self._controller_state[resp[7:9]]
 
             # The first four characters are the error code and represent
             # hexadecimal digits. These form a 16-digit number in binary
@@ -104,6 +108,10 @@ class DelayStage(SerialDevice):
             self.cmd_result.emit('Error: {}'.format(str(e)))
             pass
 
+    def _read_current_conditions(self):
+        for cmd in self.cmds:
+            self.write('{}?'.format(self.cmds[cmd]), self.comtime)
+            self._cond_vars[cmd] = self.read()[3:].strip()
     # def return_state(self):
     #     pass
 

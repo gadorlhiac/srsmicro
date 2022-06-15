@@ -97,7 +97,7 @@ class Insight(SerialDevice):
         self._read_current_conditions()
         try:
             self.write('*STB?', self.comtime)
-            resp = int(self.read()).strip()
+            resp = int(self.read())
 
             self._cond_vars['main_shutter'] = resp & 0x00000004
             self._cond_vars['fixed_shutter'] = resp & 0x00000008
@@ -141,7 +141,7 @@ class Insight(SerialDevice):
                 history += '{}: {}\n'.format(code, self.fault_codes[code])
 
             self._cond_vars['history'] = history
-            self.cmd_result = 'Read from history buffer. Appended to logs.'
+            self.cmd_result.emit('Read from history buffer. Appended to logs.')
         except Exception as e:
             err = 'Error while reading history: {}'.format(str(e))
             self._cond_vars['history'] = err
@@ -172,9 +172,9 @@ class Insight(SerialDevice):
         return state
 
     def _read_current_conditions(self):
-        for cmd in self._cond_vars:
-            self.write('{}?'.format(cmds[i]), self._comtime)
-            self._cond_vars[i] = self.read().strip()
+        for cmd in self.cmds:
+            self.write('{}?'.format(self.cmds[cmd]), self.comtime)
+            self._cond_vars[cmd] = self.read().strip()
 
     def parse_cmd(self, param, val):
         if param == 'op_state':
@@ -182,8 +182,9 @@ class Insight(SerialDevice):
                 # self._cond_vars['op_state'] = 'RUN'
                 if self._cond_vars['op_state'] == 'RUN':
                     self.write('OFF', self.comtime)
+                    self.cmd_result.emit('Turning laser off.')
                 else:
-                    self.write('ON')
+                    self.write('ON', self.comtime)
                     self.cmd_result.emit('Turning laser on.')
         elif param == 'main_shutter':
             if self._cond_vars['main_shutter']:
@@ -192,9 +193,9 @@ class Insight(SerialDevice):
                 self.write('{} 1'.format(self.cmds['main_shutter']), self.comtime)
         elif param == 'fixed_shutter':
             if self._cond_vars['fixed_shutter']:
-                self.write('{} 0'.format(self.cmds['main_shutter']), self.comtime)
+                self.write('{} 0'.format(self.cmds['fixed_shutter']), self.comtime)
             else:
-                self.write('{} 1'.format(self.cmds['main_shutter']), self.comtime)
+                self.write('{} 1'.format(self.cmds['fixed_shutter']), self.comtime)
         elif param == 'opo_wl':
             self.write('{}{}'.format(self.cmds['opo_wl'], val), self.comtime)
         elif param == 'align':

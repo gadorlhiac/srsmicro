@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Cleanup on shutdown
     ############################################################################
     app.aboutToQuit.connect(controller.exit)
-    app.aboutToQuit.connect(result.exit)
+    # app.aboutToQuit.connect(result.exit)
 
     # MainWindow has it's own closeEvent slot which handles exiting
 

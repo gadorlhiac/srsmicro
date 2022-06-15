@@ -65,7 +65,7 @@ class MainController(QObject):
         self._zi.state.connect(self.device_state)
 
         # Connect all devices' independent cmd_result Signals to the controller
-        # self._insight.cmd_result.connect(self._read_result)
+        self._insight.cmd_result.connect(self._read_result)
         self._delaystage.cmd_result.connect(self._read_result)
         self._zi.cmd_result.connect(self._read_result)
         # self.cmd_result = ''
