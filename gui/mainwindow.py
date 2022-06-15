@@ -231,6 +231,7 @@ class MainWindow(QMainWindow):
                                            statpath='srsmicro/gui/format/delaystage_status.fmt',
                                            ctrlpath='srsmicro/gui/format/delaystage_controls.ctrl')
         self._delaystage_panel.expmt_msg.connect(self.update_log)
+        self._delaystage_panel.cmd.connect(self.cmd)
         self.data.connect(self._delaystage_panel.update_data)
         self.delaystage_logs.connect(self._delaystage_panel.update_log)
         self.delaystage_state.connect(self._delaystage_panel.update_state)
@@ -241,6 +242,7 @@ class MainWindow(QMainWindow):
                                            statpath='srsmicro/gui/format/lockin_status.fmt',
                                            ctrlpath='srsmicro/gui/format/lockin_controls.ctrl')
         self._zi_panel.expmt_msg.connect(self.update_log)
+        self._zi_panel.cmd.connect(self.cmd)
         self.data.connect(self._zi_panel.update_data)
         self.zi_logs.connect(self._zi_panel.update_log)
         self.zi_state.connect(self._zi_panel.update_state)
@@ -252,6 +254,7 @@ class MainWindow(QMainWindow):
                                            statpath='srsmicro/gui/format/fssrs_status.fmt',
                                            ctrlpath='srsmicro/gui/format/fssrs_controls.ctrl')
         self._fssrs_panel.expmt_msg.connect(self.update_log)
+        self._fssrs_panel.cmd.connect(self.cmd)
         self.data.connect(self._fssrs_panel.update_data)
         self.fssrs_logs.connect(self._fssrs_panel.update_log)
 

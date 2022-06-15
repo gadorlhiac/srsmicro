@@ -126,7 +126,7 @@ class DelayStage(SerialDevice):
             if newpos < -100 or newpos > 100:
                 raise ValueError('Trying to move beyond the limits of the stage.')
             # Query the device to determine how long the relative move will take.
-            self.write('1PT{:.4f}'.format(val), self.comtime)
+            self.write('1PT{:.4f}'.format(abs(val)), self.comtime)
             t = float(self.read()[3:])
 
             # Move to the new position, using the time calculated above as the amount
@@ -159,7 +159,7 @@ class DelayStage(SerialDevice):
                 raise ValueError('Position must be between -100 and 100.')
             # Calculate the relative move between the current position and the
             # desired position.
-            rel_mov = np.abs(val - float(self._cond_vars['pos']))
+            rel_mov = val - float(self._cond_vars['pos'])
             self._move_relative(rel_mov)
 
         except Exception as err:
@@ -174,9 +174,9 @@ class DelayStage(SerialDevice):
         elif param == 'rel_move_pos':
             self._move_relative(float(val))
         elif param == 'vel':
-            self.write('{}{}'.format(self.cmds['vel'], val))
+            self.write('{}{}'.format(self.cmds['vel'], val), self.comtime)
         elif param == 'accel':
-            self.write('{}{}'.format(self.cmds['accel'], val))
+            self.write('{}{}'.format(self.cmds['accel'], val), self.comtime)
 
     # On application close
     ############################################################################

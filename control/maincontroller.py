@@ -50,7 +50,7 @@ class MainController(QObject):
         # Instance of the Insight device for controlling the laser.
         self._insight = Insight(name='Insight')
         self.insight_cmd.connect(self._insight.parse_cmd)
-        self._insight.cmd_result.connect(self.log)
+        # self._insight.cmd_result.connect(self.log)
 
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
@@ -142,6 +142,7 @@ class MainController(QObject):
         # response from the device
         # Each device case is handled by separate function
         # Can't use match-case because computer running software is too old
+        self._reporter.pause = True
         if device == 'Global':
             resp = self.global_control(param, val)
 
@@ -161,7 +162,7 @@ class MainController(QObject):
         self.log.emit('Attempting {} command - {}: {}'.format(device, param, val))
         # self.log.emit('Functionality not implemented. Request failed.')
         # mw.statusbar = resp
-
+        self._reporter.pause = False
 
     def global_control(self, parameter: str, val: str) -> str:
         """! Manage device responses to what are currently called "global"

@@ -28,9 +28,9 @@ class StatusReporter(QObject):
         while True:
             time.sleep(1)
             for device in self.devices:
+                if self.pause:
+                    break
                 device.query_state()
-            if self.pause:
-                return
 
     def add_device(self, device):
         """! Method to add a device to the query list if it was not included
