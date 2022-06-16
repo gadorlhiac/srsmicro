@@ -1,0 +1,8 @@
+./D4100_usb.cpp
+./FirmwareLoader/loader.cpp
+./FirmwareLoader/firmware1.h
+./FirmwareLoader/firmware2.h
+./FirmwareLoader/loader.h
+./Headers/CyAPI.h
+./Headers/D4100_usb.h
+./Headers/RegisterDefines.h
