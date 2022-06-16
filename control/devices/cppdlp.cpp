@@ -51,13 +51,21 @@ void CppDlp:cpp_load()
     }
 }
 
-void CppDlp:cpp_reset()
+short CppDlp:cpp_reset()
 {
+    // Either load control returns 1 if successful
+    short result = 1;
     // C++
-    // loadControl(_lowLevelDev);
+    if (loadControl(_lowLevelDev))
+    {
+        // extern C function
+        ClearFifos(_devNumber);
+    }
     // C
-    LoadControl(_devNumber);
-    ClearFifos(_devNumber);
+    if (LoadControl(_devNumber))
+    {
+        ClearFifos(_devNumber);
+    }
 }
 
 void CppDlp::cpp_close()
