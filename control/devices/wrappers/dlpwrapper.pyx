@@ -1,7 +1,7 @@
 # distutils: language = c++
 from Dlp cimport CppDlp
 
-cdef class PyKcube:
+cdef class DlpWrapper:
     """The PyKcube class definition for controlling Thorlabs KCubes.
     Minimal Cython wrapper for the cppkcube class written in C++.
     """

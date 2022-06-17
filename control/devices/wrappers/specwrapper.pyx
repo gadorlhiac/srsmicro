@@ -1,7 +1,7 @@
 # distutils: language = c++
 from Spec cimport CppSpec
 
-cdef class PySpec:
+cdef class SpecWrapper:
     cdef CppSpec *cpp_spec
     cdef int _pos
     cdef int _vel

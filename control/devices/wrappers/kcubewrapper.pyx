@@ -1,11 +1,15 @@
 # distutils: language = c++
-from Kcube cimport CppKcube
+from pykcube cimport CppKcube
 
-cdef class PyKcube:
+cdef class KcubeWrapper:
+    """The PyKcube class definition for controlling Thorlabs KCubes.
+    Minimal Cython wrapper for the cppkcube class written in C++.
+    """
     cdef CppKcube *cpp_kcube
     cdef int _pos
     cdef int _vel
     cdef int _accel
+
 
     def __cinit__(self, int poll_time):
         self.cpp_kcube = new CppKcube(poll_time)
