@@ -74,7 +74,7 @@ class Insight(SerialDevice):
         Initiliazes comport (inherited from SerialDevice) to COM6
         """
         super().__init__(name)
-        self.baudrate=115200
+        self.baudrate = 115200
         self.comport = 'COM6'
         # self._isconnected = False
         # self._cmd_result = ''
