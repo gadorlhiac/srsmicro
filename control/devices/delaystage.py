@@ -1,6 +1,11 @@
 """!
 @brief Definition of the DelayStage class for interaction with the Newport FCL200 delay stage as well as
 custom exception classes PositionerError and CommandError for parsing the corresponding error codes.
+
+Classes:
+DelayStage
+PositionError
+CommandError
 """
 
 from .serialdevice import SerialDevice
@@ -8,7 +13,14 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 class DelayStage(SerialDevice):
     """! The DelayStage class for controlling the Newport FCL200 delay stage.
+
     Extends the SerialDevice class with device specific methods and variables.
+
+    Properties:
+    -----------
+
+    Methods:
+    --------
     """
     ## @var _controller_state
     # (dict[str]:str) Dictionary reference for definitions of two hexadecimal delay stage state responses.
@@ -28,6 +40,8 @@ class DelayStage(SerialDevice):
                           '34' : 'READY from DISABLE.',
                           '3C' : 'DISABLE from READY.',
                           '3D' : 'DISABLE from MOVING.' }
+    ## @var cmds
+    # (dict[str]:str) Dictionary reference for serial commands to the delay stage.
     cmds = { 'pos' : '1TP',
              'vel' : '1VA',
              'accel' : '1AC' }
@@ -69,7 +83,7 @@ class DelayStage(SerialDevice):
             # hexadecimal digits. These form a 16-digit number in binary
             # representation. A 1 in any position flags an error, which is
             # defined in the class variable _pos_errors of the PositionerError.
-            bin_repr = format(int(qs[3:7], 16), '0>16b')
+            bin_repr = format(int(resp[3:7], 16), '0>16b')
             if '1' in bin_repr:
                 raise PoisionerError(bin_repr)
 
@@ -78,11 +92,11 @@ class DelayStage(SerialDevice):
         except PositionerError as e:
             self._cond_vars['pos_err'] = str(e)
             # self.cmd_result = 'Positioner error: {}'.format(str(e))
-            self.cmd_result.emit('Positioner error: {}'.format(str(e)))
+            self.cmd_result.emit(f'Positioner error: {str(e)}')
 
         except Exception as e:
             # self.cmd_result = 'Error: {}'.format(str(e))
-            self.cmd_result.emit('Error: {}'.format(str(e)))
+            self.cmd_result.emit(f'Error: {str(e)}')
             pass
 
     def check_errors(self):
@@ -102,7 +116,7 @@ class DelayStage(SerialDevice):
                 raise CommandError(resp)
 
         except CommandError as e:
-                    # self.cmd_result = 'Command error: {}'.format(str(e))
+            # self.cmd_result = 'Command error: {}'.format(str(e))
             pass
         except Exception as e:
             # self.cmd_result = 'Error: {}'.format(str(e))
@@ -110,7 +124,7 @@ class DelayStage(SerialDevice):
 
     def _read_current_conditions(self):
         for cmd in self.cmds:
-            self.write('{}?'.format(self.cmds[cmd]), self.comtime)
+            self.write(f'{self.cmds[cmd]}?', self.comtime)
             self._cond_vars[cmd] = self.read()[3:].strip()
 
     # Motion and parameter setting
@@ -126,12 +140,12 @@ class DelayStage(SerialDevice):
             if newpos < -100 or newpos > 100:
                 raise ValueError('Trying to move beyond the limits of the stage.')
             # Query the device to determine how long the relative move will take.
-            self.write('1PT{:.4f}'.format(abs(val)), self.comtime)
+            self.write(f'1PT{abs(val):.4f}', self.comtime)
             t = float(self.read()[3:])
 
             # Move to the new position, using the time calculated above as the amount
             # of time to wait/block further communication.
-            self.write('1PR{:.4f}'.format(val), t + self.comtime)
+            self.write(f'1PR{val:.4f}', t + self.comtime)
             # self.cmd_result = self.read()
             self.cmd_result.emit(self.read())
 
@@ -145,7 +159,7 @@ class DelayStage(SerialDevice):
 
         except Exception as err:
             # self.cmd_result = 'Delay stage not moved. {}'.format(str(err))
-            self.cmd_result.emit('Delay stage not moved. {}'.format(str(err)))
+            self.cmd_result.emit(f'Delay stage not moved. {str(err)}')
 
     def _move_absolute(self, val):
         """! Move the stage to a new absolute position.
@@ -164,7 +178,7 @@ class DelayStage(SerialDevice):
 
         except Exception as err:
             # self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
-            self.cmd_result.emit('Delay stage not moved. {}.'.format(str(err)))
+            self.cmd_result.emit(f'Delay stage not moved. {str(err)}.')
 
     def parse_cmd(self, param, val):
         if param == 'abs_move':
@@ -174,9 +188,9 @@ class DelayStage(SerialDevice):
         elif param == 'rel_move_pos':
             self._move_relative(float(val))
         elif param == 'vel':
-            self.write('{}{}'.format(self.cmds['vel'], val), self.comtime)
+            self.write(f'{self.cmds["vel"]}{val}', self.comtime)
         elif param == 'accel':
-            self.write('{}{}'.format(self.cmds['accel'], val), self.comtime)
+            self.write(f'{self.cmds["accel"]}{val}', self.comtime)
 
     # On application close
     ############################################################################
@@ -226,7 +240,7 @@ class PositionerError(Exception):
         # counting from 0) indicates an error _pos_errors[4] (Driver overheating.)
         for i in range(16):
             if error_code[i] == '1':
-                self.msg += '{} '.format(self._pos_errors[i])
+                self.msg += f'{self._pos_errors[i]} '
 
     def __str__(self):
         """! String representation of the PositionError on print

@@ -16,7 +16,7 @@ namespace ti
             // Methods
             CppDlp(int img[800][1280]);
 
-            cpp_load();
+            int cpp_LoadData();
 
             void cpp_close();
             int cpp_move(int newpos);

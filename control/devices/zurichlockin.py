@@ -1,7 +1,13 @@
 """!
 @brief Definition of the ZurichLockin class for interaction with the Zurich
+
 Instruments HF2LI lock-in amplifier as well as custom exception classes APIError
 and DeviceNotFoundError for zhinst API errors.
+
+Classes:
+ZurichLockin
+DeviceNotFoundError
+APIError
 """
 
 from .device import Device
@@ -22,11 +28,17 @@ import yaml
 # _cond_vars is a list of list as opposed to
 
 class ZurichLockin(Device):
-    """! The base class for the ZI HF2LI lock-in amplifier.
+    """! The base class for interacting with the ZI HF2LI lock-in amplifier.
 
     Uses a separate server for communication through ZI's provided API. For
     simplicity, and reproducibility, ZI API calls are handled behind the scenes,
     so the end user experience mimics using the SerialDevice class.
+
+    Properties:
+    -----------
+
+    Methods:
+    --------
     """
     data = Signal(object, object)
 
@@ -75,7 +87,7 @@ class ZurichLockin(Device):
         discovery = ziPython.ziDiscovery()
         devs = discovery.findAll()
         if len(devs) == 0:
-            raise(DeviceNotFound('No lockin detected. Is everything plugged in?'))
+            raise(DeviceNotFoundError('No lockin detected. Is everything plugged in?'))
         else:
             dev = devs[0]
             info = discovery.get(dev)
@@ -115,8 +127,9 @@ class ZurichLockin(Device):
             self._daq_thread.finished.connect(self._daq_thread.deleteLater)
 
 
-    def _enable_demod(self, demod=0, sigin=0, freq=1.028e7, harm=1, tc=3e-6,
-                                                    order=4, osc=0, rate=100000):
+    def _enable_demod(self, demod: int = 0, sigin: int = 0, freq: float = 1.028e7,
+                            harm: int = 1, tc: float = 3e-6, order: int = 4,
+                            osc: int = 0, rate: int = 100000):
         """! Enable a demodulator for signal processing.
         @param demod (int) Index of demodulator, [0, 5]. Default: 0
         @param sigin (int) Index of signal input, [0, 5]. Default: 0 (Signal In 1)
@@ -157,23 +170,25 @@ class ZurichLockin(Device):
         self._server.sync()
 
         # Update object copy of parameters and logs
-        self._cond_vars['demod{}'.format(demod)] = { 'enable' : 1,
-                                                     'sigin' : sigin,
-                                                     'harmonic' : harm,
-                                                     'tc' : tc,
-                                                     'order' : order,
-                                                     'oscillator' : 0,
-                                                     'rate': rate }
-        self._cond_vars['osc{}'.format(osc)] ={ 'freq' : freq }
+        self._cond_vars[f'demod{demod}'] = { 'enable' : 1,
+                                             'sigin' : sigin,
+                                             'harmonic' : harm,
+                                             'tc' : tc,
+                                             'order' : order,
+                                             'oscillator' : 0,
+                                             'rate': rate }
 
-        self._logs += '{} Demodulator {} using:\n'.format(self.current_time, demod)
-        for param in self._cond_vars['demod{}'.format(demod)]:
+        self._cond_vars[f'osc{osc}'] ={ 'freq' : freq }
+
+        self._logs += f'{self.current_time} Demodulator {demod} using:\n'
+        for param in self._cond_vars[f'demod{demod}']:
             self._logs += '{}: {}\n'.format(param, self._cond_vars['demod{}'.format(demod)][param])
 
-        self._logs += 'Oscillator {} using:\n'.format(osc)
-        self._logs += '{}: {}\n'.format('freq', freq)
+        self._logs += f'Oscillator {osc} using:\n'
+        self._logs += f'freq: {freq}\n'
 
-    def _configure_sigin(self, sigin=0, ac=1, imp50=1, diff=0, range=.01):
+    def _configure_sigin(self, sigin: int = 0, ac: int = 1, imp50: int = 1,
+                                             diff: int = 0, range: float = .01):
         """! Configure signal in parameters.
         @param sigin (int) Index of signal input to configure. Default: 0
         @param ac (int) Whether to enable AC coupling. Default: 1 (Enable)
@@ -182,29 +197,30 @@ class ZurichLockin(Device):
         @param range (float) Voltage range of signal in V (0.0001). Default: 0.01
         """
         # Signal input parameter settings
-        sig_set = [['/{}/sigins/{}/ac'.format(self._devname, sigin), ac],
-                   ['/{}/sigins/{}/imp50'.format(self._devname, sigin), imp50],
-                   ['/{}/sigins/{}/diff'.format(self._devname, sigin), diff],
-                   ['/{}/sigins/{}/range'.format(self._devname, sigin), range]]
+        sig_set = [[f'/{self._devname}/sigins/{sigin}/ac', ac],
+                   [f'/{self._devname}/sigins/{sigin}/imp50', imp50],
+                   [f'/{self._devname}/sigins/{sigin}/diff', diff],
+                   [f'/{self._devname}/sigins/{sigin}/range', range]]
 
         # Push settings to lock-in
         self._server.set(sig_set)
         self._server.sync()
 
         # Update object copy of parameters and logs
-        self._cond_vars['sigin{}'.format(sigin)] = { 'enable' : 1,
-                                                     'ac' : ac,
-                                                     'imp50' : imp50,
-                                                     'diff' : diff,
-                                                     'range' : range}
+        self._cond_vars[f'sigin{sigin}'] = { 'enable' : 1,
+                                             'ac' : ac,
+                                             'imp50' : imp50,
+                                             'diff' : diff,
+                                             'range' : range}
 
 
-        self._logs += '{} Configured input {} using:\n'.format(self.current_time, sigin)
-        for param in self._cond_vars['sigin{}'.format(sigin)]:
+        self._logs += f'{self.current_time} Configured input {sigin} using:\n'
+        for param in self._cond_vars[f'sigin{sigin}']:
             self._logs += '{}: {}'.format(param, self._cond_vars['sigin{}'.format(sigin)][param])
 
 
-    def _configure_sigout(self, sigout=0, on=1, add=0, range=10):
+    def _configure_sigout(self, sigout: int = 0, on: int = 1, add: int = 0,
+                                                              range: int = 10):
         """! Configure signal out parameters. Defaults to beginning output, so
         should only be called to begin output, or then to disable it afterwards.
         @param sigout (int) Index of signal output to configure. Default: 0
@@ -212,9 +228,9 @@ class ZurichLockin(Device):
         @param add (int) Toggle the signal adder on or off. Default: 0 (Off)
         @param range (float) Output range [0.01, 0.1, 1, 10]. Default: 10
         """
-        sig_set = [['/{}/sigouts/{}/on'.format(self._devname, sigout), on],
-                   ['/{}/sigouts/{}/add'.format(self._devname, sigout), add],
-                   ['/{}/sigouts/{}/range'.format(self._devname, sigout), range]]
+        sig_set = [[f'/{self._devname}/sigouts/{sigout}/on', on],
+                   [f'/{self._devname}/sigouts/{sigout}/add', add],
+                   [f'/{self._devname}/sigouts/{sigout}/range', range]]
         self._server.set(sig_set)
         self._server.sync()
 
@@ -437,12 +453,12 @@ class ZurichLockin(Device):
                 raise APIError(self._api_error)
 
         except APIError as e:
-            self._api_error = str(msg)
-            self.last_action = str(msg)
+            self._api_error = str(e)
+            self.last_action = str(e)
 
 # Exception error classes
 ############################################################################
-class DeviceNotFound(Exception):
+class DeviceNotFoundError(Exception):
     """! Exception class when unable to find Lockin devices connected."""
     def __init__(self, msg):
         """! DeviceNotFound class initializer.

@@ -159,7 +159,7 @@ class MainController(QObject):
         elif device == 'kcube':
             resp = 'Not configured yet'
 
-        self.log.emit('Attempting {} command - {}: {}'.format(device, param, val))
+        self.log.emit(f'Attempting {device} command - {param}: {val}')
         # self.log.emit('Functionality not implemented. Request failed.')
         # mw.statusbar = resp
         self._reporter.pause = False

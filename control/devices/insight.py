@@ -1,6 +1,9 @@
 """!
 @brief Definition of the Insight class for interacting with the Insight DS+
 femtosecond laser.
+
+Classes:
+Insight
 """
 
 from .serialdevice import SerialDevice
@@ -8,7 +11,14 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 class Insight(SerialDevice):
     """! The Insight class for controlling the SpectraPhysics Insight DS+ femtosecond laser/OPO.
+
     Extends the SerialDevice class with device specific methods and variables.
+
+    Methods:
+    --------
+
+    Properties:
+    -----------
     """
     ## @var cmds
     # (dict[str]:str) Dictionary reference for the write commands to retrieve or set various laser variables. Keys are the shorthand used in code.
@@ -67,7 +77,7 @@ class Insight(SerialDevice):
                   0x00008000 : 'Faul detected. Laser diodes turned off. Check history.',
                 }
 
-    # cmd_result = Signal(str)
+    cmd_result = Signal(str)
 
     def __init__(self, name='Insight'):
         """! The Insight class initializer.
@@ -126,7 +136,7 @@ class Insight(SerialDevice):
         for key in self.op_errors:
             if (state & key):
                 self._cond_vars['op_errors'] += self.op_errors[key]
-                self.cmd_result.emit('Insight: {}'.format(self.op_errors[key]))
+                self.cmd_result.emit(f'Insight: {self.op_errors[key]}')
                 found_error = True
         if not found_error:
             self._cond_vars['op_errors'] = 'None'
@@ -143,12 +153,12 @@ class Insight(SerialDevice):
             codes = self.read().strip().split(' ')
             history = ''
             for code in codes:
-                history += '{}: {}\n'.format(code, self.fault_codes[code])
+                history += f'{code}: {self.fault_codes[code]}\n'
 
             self._cond_vars['history'] = history
             self.cmd_result.emit('Read from history buffer. Appended to logs.')
         except Exception as e:
-            err = 'Error while reading history: {}'.format(str(e))
+            err = f'Error while reading history: {str(e)}'
             self._cond_vars['history'] = err
             self.cmd_result.emit(err)
 
@@ -178,7 +188,7 @@ class Insight(SerialDevice):
 
     def _read_current_conditions(self):
         for cmd in self.cmds:
-            self.write('{}?'.format(self.cmds[cmd]), self.comtime)
+            self.write(f'{self.cmds[cmd]}?', self.comtime)
             self._cond_vars[cmd] = self.read().strip()
 
     def parse_cmd(self, param, val):
@@ -193,21 +203,21 @@ class Insight(SerialDevice):
                     self.cmd_result.emit('Turning laser on.')
         elif param == 'main_shutter':
             if self._cond_vars['main_shutter']:
-                self.write('{} 0'.format(self.cmds['main_shutter']), self.comtime)
+                self.write(f'{self.cmds["main_shutter"]} 0', self.comtime)
             else:
-                self.write('{} 1'.format(self.cmds['main_shutter']), self.comtime)
+                self.write(f'{self.cmds["main_shutter"]} 1', self.comtime)
         elif param == 'fixed_shutter':
             if self._cond_vars['fixed_shutter']:
-                self.write('{} 0'.format(self.cmds['fixed_shutter']), self.comtime)
+                self.write(f'{self.cmds["fixed_shutter"]} 0', self.comtime)
             else:
-                self.write('{} 1'.format(self.cmds['fixed_shutter']), self.comtime)
+                self.write(f'{self.cmds["fixed_shutter"]} 1', self.comtime)
         elif param == 'opo_wl':
-            self.write('{}{}'.format(self.cmds['opo_wl'], val), self.comtime)
+            self.write(f'{self.cmds["opo_wl"]}{val}', self.comtime)
         elif param == 'align':
             if self._cond_vars['align'] == 'RUN':
-                self.write('{} ALIGN'.format(self.cmds['align'], val), self.comtime)
+                self.write(f'{self.cmds["align"]} ALIGN', self.comtime)
             else:
-                self.write('{} RUN'.format(self.cmds['align'], val), self.comtime)
+                self.write(f'{self.cmds["align"]} RUN', self.comtime)
 
 
     # @property

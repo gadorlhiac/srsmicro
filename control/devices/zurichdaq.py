@@ -11,15 +11,22 @@ import numpy as np
 
 class ZurichDaq(QObject):
     """! The class for managing the Lock-in amplifier's data acquisition module.
+
     Intended for management on a background thread. Multiple ZurichDaqs can be
     created to sample from different data streams. Wraps the DAQ module from
     the ZI API for smoother integration with the Qt framework.
+
+    Properties:
+    -----------
+
+    Methods:
+    --------
     """
     data = Signal(object)
     shutdown = Signal()
 
     def __init__(self, daq, devname, path):
-        """! The ZurichDaq constructor.
+        """! The ZurichDaq initializer.
         @param devname (str) The lock-in device name, needed for the parameter hierarchy.
         @param daq (dataAcquisitionModule) A lock-in dataAcquisitionModule.
         @param
@@ -33,7 +40,7 @@ class ZurichDaq(QObject):
         # We subscribe to the R value from this node
         # Maintaining path this way allows using it more simply for retrieving
         # the trigger node
-        self._daq.subscribe('{}.r'.format(self._path))
+        self._daq.subscribe(f'{self._path}.r')
 
         self._pixeldwell = 3e-6
         self._stop = False
@@ -74,6 +81,13 @@ class ZurichDaq(QObject):
     ############################################################################
 
     def setup_scan(self, rows=512, cols=512, repetitions=1, interp=2, delay=0):
+        """! Scan settings, e.g., rows/cols, interpolation type.
+        @param rows (int) Number of rows. Default: 512
+        @param cols (int) Number of columns. Default: 512
+        @param repetitions (int) Number of times to repeat scan (for avg). Default: 1
+        @param interp (int) Interpolation type. Default: 2 (Linear). 1 = Nearest, 4 = No resampling.
+        @param delay (float) Delay of frame position relative to trigger edge. Default: 0 (s)
+        """
         self._parameters = [['dataAcquisitionModule/grid/rows', rows],
                             ['dataAcquisitionModule/grid/cols', cols],
                             ['dataAcquisitionModule/grid/direction', 0],
@@ -95,7 +109,7 @@ class ZurichDaq(QObject):
         """
         self._parameters = [['dataAcquisitionModule/type', 1],
                             ['dataAcquisitionModule/triggernode',
-                             '{}.{}'.format(self._path, node)],
+                             f'{self._path}.{node}'],
                             ['dataAcquisitionModule/edge', 1],
                             ['dataAcquisitionModule/level', level]]
         self._daq.set(self._parameters)
@@ -109,12 +123,12 @@ class ZurichDaq(QObject):
             try:
                 self.read_daq()
             except KeyError as err:
-                print('{}.r'.format(self._path))
+                print(f'{self._path}.r')
             if self.stop:
                 return
 
     def read_daq(self):
-        img = self._daq.read(True)['{}.r'.format(self._path)][0]['value'].T
+        img = self._daq.read(True)[f'{self._path}.r'][0]['value'].T
         # img = np.random.random([512, 512])
         self.data.emit(img)
 

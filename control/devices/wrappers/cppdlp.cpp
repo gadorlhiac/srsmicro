@@ -41,7 +41,7 @@ CppDlp::CppDlp(UCHAR img)
     return
 }
 
-void CppDlp:cpp_load()
+int CppDlp:cpp_LoadData()
 {
     cpp_reset();
     for(int i = 0; i < 800; i++)
@@ -49,6 +49,13 @@ void CppDlp:cpp_load()
         uchar* tmp = _img[i];
         LoadData(tmp, _dmdType, _devNumber);
     }
+    return 1; // Add checking for actual return values
+}
+
+int cpp_LoadControl()
+{
+    short result;
+    result = LoadControl(_devNumber);
 }
 
 short CppDlp:cpp_reset()
@@ -62,10 +69,10 @@ short CppDlp:cpp_reset()
         ClearFifos(_devNumber);
     }
     // C
-    if (LoadControl(_devNumber))
-    {
-        ClearFifos(_devNumber);
-    }
+    //if (LoadControl(_devNumber))
+    //{
+    //    ClearFifos(_devNumber);
+    //}
 }
 
 void CppDlp::cpp_close()

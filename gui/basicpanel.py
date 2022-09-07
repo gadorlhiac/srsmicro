@@ -271,5 +271,5 @@ class BasicPanel(Dock):
         self._logs.insertPlainText('{}: {}\n'.format(time.asctime(time.localtime(time.time())),
                                                     msg))
 
-        def _display_widget(self):
-            pass
+    def _display_widget(self):
+        pass

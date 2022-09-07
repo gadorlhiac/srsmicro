@@ -35,7 +35,7 @@ class StatusReporter(QObject):
         signal is received, asking devices to emit their state conditions.
         """
         while True:
-            time.sleep(1)
+            time.sleep(0.5)
             for device in self.devices:
                 if self.pause:
                     break

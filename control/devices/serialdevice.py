@@ -1,5 +1,8 @@
 """!
 @brief Definition of base class for devices using serial communication.
+
+Classes:
+SerialDevice
 """
 
 from .device import Device
@@ -9,16 +12,25 @@ from serial import Serial
 import time
 
 class SerialDevice(Device):
-    """! The base class for serial devices.
+    """! The base class for serial devices. Allows for serial communication.
 
-    Defines the base class used by devices whose serial communication is managed
-    directly. Currently includes:
+    Super class for all serial devices. Includes:
     - Prior sample stage
     - Insight DS+ femtosecond laser/OPO
     - Newport FCL200 optical delay stage
+
+    Properties:
+    -----------
+    baudrate (int) : Serial communication baud rate
+    comport (str) : Communication port. Of format COM1, COM2, etc.
+
+    Methods:
+    --------
+    write(cmd, waittime) : Write a command to a serial device.
+    read() : Read a response from a serial device.
     """
 
-    def __init__(self, name='Serial Device'):
+    def __init__(self, name: str = 'Serial Device'):
         """! The SerialDevice base class constructor."""
         super().__init__(name)
         ## @var _sercom
@@ -49,17 +61,17 @@ class SerialDevice(Device):
         """! Private function which closes communication over a serial port."""
         self._sercom.close()
 
-    def write(self, cmd, waittime):
+    def write(self, cmd: str, waittime: float):
         """! Write a command to the serial device.
         @param cmd (str) The command to be written
         @param waittime (float) The time to wait after writing a command. Blocks
         communication, preventing writing multiple commands before the
         device can respond.
         """
-        self._sercom.write(bytes('{}\n'.format(cmd), encoding='utf8'))
+        self._sercom.write(bytes(f'{cmd}\n', encoding='utf8'))
         time.sleep(waittime)
 
-    def read(self):
+    def read(self) -> str:
         """! Read back an answer from the serial device.
         @return (str) The ASCII decoded result from reading back from the device.
         """
@@ -68,30 +80,30 @@ class SerialDevice(Device):
     # Properties for setting values and retrieving results
     ############################################################################
     @property
-    def baudrate(self):
+    def baudrate(self) -> int:
         """! Property for the communication baud rate.
         @return _baudrate (int) Communication baud rate.
         """
         return self._baudrate
 
     @baudrate.setter
-    def baudrate(self, val):
+    def baudrate(self, val: int):
         """! Property setter for the communication baud rate.
         @param val (int) Baud rate.
         """
         self._baudrate = val
         self._sercom.baudrate = val
-        # self.cmd_result = 'Baud rate set to: {}'.format(val)
+        self.cmd_result.emit(f'Baud rate set to: {val}')
 
     @property
-    def comport(self):
+    def comport(self) -> str:
         """! Property for the communication port.
         @return _comport (str) Communication port. E.g. 'COM1'
         """
         return self._comport
 
     @comport.setter
-    def comport(self, val):
+    def comport(self, val: str):
         """! Property setter for changing the communication port.
         @param val (str) New communication port. E.g. 'COM1'
         """
@@ -105,23 +117,22 @@ class SerialDevice(Device):
                                       where X is an integer.')
 
             self._comport = val
-            # self.cmd_result = 'COM port set to: {}'.format(val)
+            self.cmd_result.emit(f'COM port set to: {val}')
 
         except TypeError as err:
             # self.cmd_result = 'COM port not changed. {}'.format(str(err))
-            self.cmd_result.emit('COM port not changed. {}'.format(str(err)))
+            self.cmd_result.emit(f'COM port not changed. {str(err)}')
 
         except ValueError as err:
             # self.cmd_result = 'COM port not changed. {}'.format(str(err))
-            self.cmd_result.emit('COM port not changed. {}'.format(str(err)))
+            self.cmd_result.emit(f'COM port not changed. {str(err)}')
 
         except Exception as err:
             # self.cmd_result = 'COM port not changed. Error: {}'.format(str(err))
-            self.cmd_result.emit('COM port not changed. Error: {}'.format(str(err)))
+            self.cmd_result.emit(f'COM port not changed. Error: {str(err)}')
 
             self._comport = val
             # self.cmd_result = 'COM port set to: {}'.format(val)
-            self.cmd_result.emit('COM port set to: {}'.format(val))
 
     # On application close
     ############################################################################
