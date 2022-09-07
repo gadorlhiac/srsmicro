@@ -9,6 +9,7 @@ CommandError
 """
 
 from .serialdevice import SerialDevice
+from serial.serialutil import PortNotOpenError
 from PyQt5.QtCore import pyqtSignal as Signal
 
 class DelayStage(SerialDevice):
@@ -47,7 +48,7 @@ class DelayStage(SerialDevice):
              'accel' : '1AC' }
     # cmd_result = Signal(str)
 
-    def __init__(self, name='Delay Stage'):
+    def __init__(self, name = 'Delay Stage'):
         """! The DelayStage class initializer.
         Initiliazes comport (inherited from SerialDevice) to COM7
         """
@@ -89,14 +90,19 @@ class DelayStage(SerialDevice):
 
             # self.cmd_result = 'Read state and checked for positioner errors.'
 
-        except PositionerError as e:
+        except PositionerError as err:
             self._cond_vars['pos_err'] = str(e)
             # self.cmd_result = 'Positioner error: {}'.format(str(e))
-            self.cmd_result.emit(f'Positioner error: {str(e)}')
+            self.cmd_result.emit(f'Positioner error: {str(err)}')
+
+        except PortNotOpenError as err:
+            pass
+            # self.log('Not connected to Insight.')
+            # self.cmd_result.emit('Not connected to Insight.')
 
         except Exception as e:
             # self.cmd_result = 'Error: {}'.format(str(e))
-            self.cmd_result.emit(f'Error: {str(e)}')
+            self.cmd_result.emit(f'Error: {str(err)}')
             pass
 
     def check_errors(self):
@@ -115,17 +121,24 @@ class DelayStage(SerialDevice):
             if resp != '@':
                 raise CommandError(resp)
 
-        except CommandError as e:
+        except CommandError as err:
             # self.cmd_result = 'Command error: {}'.format(str(e))
             pass
-        except Exception as e:
-            # self.cmd_result = 'Error: {}'.format(str(e))
+        except PortNotOpenError as err:
             pass
+            # self.cmd_result.emit('Not connected to delay stage.')
+        # except Exception as e:
+        #     # self.cmd_result = 'Error: {}'.format(str(e))
+        #     pass
 
     def _read_current_conditions(self):
         for cmd in self.cmds:
-            self.write(f'{self.cmds[cmd]}?', self.comtime)
-            self._cond_vars[cmd] = self.read()[3:].strip()
+            try:
+                self.write(f'{self.cmds[cmd]}?', self.comtime)
+                self._cond_vars[cmd] = self.read()[3:].strip()
+            except PortNotOpenError as err:
+                self._cond_vars[cmd] = '-'
+                # self.cmd_result.emit('Not connected to delay stage.')
 
     # Motion and parameter setting
     ############################################################################
@@ -156,8 +169,12 @@ class DelayStage(SerialDevice):
             # Update the _cond_vars dictionary appropriately.
             self.write('1TP?', self.comtime)
             self._cond_vars['pos'] = self.read()[3:]
+        except PortNotOpenError as err:
+            self.log('Not connected to delay stage.')
+            self.cmd_result.emit('Not connected to delay stage.')
 
         except Exception as err:
+            self.log('Not connected to delay stage.')
             # self.cmd_result = 'Delay stage not moved. {}'.format(str(err))
             self.cmd_result.emit(f'Delay stage not moved. {str(err)}')
 
@@ -175,22 +192,31 @@ class DelayStage(SerialDevice):
             # desired position.
             rel_mov = val - float(self._cond_vars['pos'])
             self._move_relative(rel_mov)
+        except PortNotOpenError as err:
+            self.log('Not connected to delay stage.')
+            self.cmd_result.emit('Not connected to delay stage.')
 
         except Exception as err:
+            self.log('Not connected to delay stage.')
             # self.cmd_result = 'Delay stage not moved. {}.'.format(str(err))
             self.cmd_result.emit(f'Delay stage not moved. {str(err)}.')
 
     def parse_cmd(self, param, val):
-        if param == 'abs_move':
-            self._move_absolute(float(val))
-        elif param == 'rel_move_neg':
-            self._move_relative(-1*float(val))
-        elif param == 'rel_move_pos':
-            self._move_relative(float(val))
-        elif param == 'vel':
-            self.write(f'{self.cmds["vel"]}{val}', self.comtime)
-        elif param == 'accel':
-            self.write(f'{self.cmds["accel"]}{val}', self.comtime)
+        try:
+            if param == 'abs_move':
+                self._move_absolute(float(val))
+            elif param == 'rel_move_neg':
+                self._move_relative(-1*float(val))
+            elif param == 'rel_move_pos':
+                self._move_relative(float(val))
+            elif param == 'vel':
+                self.write(f'{self.cmds["vel"]}{val}', self.comtime)
+            elif param == 'accel':
+                self.write(f'{self.cmds["accel"]}{val}', self.comtime)
+
+        except PortNotOpenError as err:
+            self.log('Not connected to delay stage.')
+            self.cmd_result.emit('Not connected to delay stage.')
 
     # On application close
     ############################################################################

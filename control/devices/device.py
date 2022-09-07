@@ -141,13 +141,11 @@ class Device(QObject):
     def _query_state(self):
         pass
 
-    @property
-    def logs(self):
-        """! Property to return device specific log information, such as
-        errors and communication updates over the serial port. There is no
-        setter for this property as the device manages its logs internally.
+    def log(self, msg: str):
+        """! Method to emit signal to log a device specific message.
+        @param msg (str) Message to be logged.
         """
-        return self._logs
+        self.state.emit(f'{self.name}+Logs', msg)
 
     @property
     def current_time(self):

@@ -109,11 +109,11 @@ class ZurichLockin(Device):
             # Create ZurichDaq object and the separate thread it runs on
             # The ZurichDaq has a dataAcquisitionModule which also runs on an
             # independent thread. This allows the ZurichDaq to do continuous
-            # polling of the dataAcquisitionModule while that in turn polls reads
+            # polling of the dataAcquisitionModule while that in turn reads
             # continuously from the physical device itself
             self._daq_thread = QThread()
             self._daq = ZurichDaq(self._server.dataAcquisitionModule(),
-                        self._devname, '/{}/demods/0/sample'.format(self._devname))
+                        self._devname, f'/{self._devname}/demods/0/sample')
             self._daq.moveToThread(self._daq_thread)
 
             # Connect _image_data for relaying information to controller and
@@ -163,7 +163,7 @@ class ZurichLockin(Device):
         # Set oscillator parameters
         # Note: documentation may indicate that demods has a frequency parameter
         # but it doesn't. Set it in the oscillator
-        parameters = [['/{}/oscs/{}/freq'.format(self._devname, osc), freq]]
+        parameters = [[f'/{self._devname}/oscs/{osc}/freq', freq]]
 
         # Push settings to lock-in
         self._server.set(parameters)
@@ -178,14 +178,16 @@ class ZurichLockin(Device):
                                              'oscillator' : 0,
                                              'rate': rate }
 
-        self._cond_vars[f'osc{osc}'] ={ 'freq' : freq }
+        self._cond_vars[f'osc{osc}'] = { 'freq' : freq }
 
-        self._logs += f'{self.current_time} Demodulator {demod} using:\n'
+        log = f'Demodulator {demod} using:\n'
         for param in self._cond_vars[f'demod{demod}']:
-            self._logs += '{}: {}\n'.format(param, self._cond_vars['demod{}'.format(demod)][param])
+            # self._logs += '{}: {}\n'.format(param, self._cond_vars['demod{}'.format(demod)][param])
+            log += f'\t{param}: {self._cond_vars[f"demod{demod}"][param]}\n'
 
-        self._logs += f'Oscillator {osc} using:\n'
-        self._logs += f'freq: {freq}\n'
+        log += f'Oscillator {osc} using:\n'
+        log += f'\tfreq: {freq}\n'
+        self.log(log)
 
     def _configure_sigin(self, sigin: int = 0, ac: int = 1, imp50: int = 1,
                                              diff: int = 0, range: float = .01):
@@ -214,9 +216,11 @@ class ZurichLockin(Device):
                                              'range' : range}
 
 
-        self._logs += f'{self.current_time} Configured input {sigin} using:\n'
+        log = f'Configured input {sigin} using:\n'
         for param in self._cond_vars[f'sigin{sigin}']:
-            self._logs += '{}: {}'.format(param, self._cond_vars['sigin{}'.format(sigin)][param])
+            # log += '{}: {}'.format(param, self._cond_vars['sigin{}'.format(sigin)][param])
+            log += f'\t{param}: {self._cond_vars[f"sigin{sigin}"][param]}\n'
+        self.log(log)
 
 
     def _configure_sigout(self, sigout: int = 0, on: int = 1, add: int = 0,
@@ -242,6 +246,17 @@ class ZurichLockin(Device):
         """
         pass
 
+    def parse_cmd(self, param, val):
+        if param == 'freq_osc0':
+            parameters = [[f'/{self._devname}/oscs/0/freq', float(val)]]
+
+        elif param == 'freq_osc1':
+            parameters = [[f'/{self._devname}/oscs/1/freq', float(val)]]
+
+        # Push settings to lock-in
+        self._server.set(parameters)
+        self._server.sync()
+
     # DAQ management (Imaging)
     ############################################################################
     def start_daq(self):
@@ -257,14 +272,22 @@ class ZurichLockin(Device):
     # On application close
     ############################################################################
     def exit(self):
-        self._daq_thread.quit()
-        self._server.disconnect()
+        print('........Closing DAQ thread.')
+        try:
+            self._daq_thread.quit()
+            self._server.disconnect()
+        except AttributeError as err:
+            print('............DAQ never opened.')
+        finally:
+            print('')
+        print('........Closing ZI server.')
         self.close()
 
     # Polling without DAQ module
     ############################################################################
-    def _poll(self, demod, sigin, poll_length=0.05, timeout=500, tc=1e-3):
-        """! Poll a demodulator and record the data.
+    def _poll(self, demod: int, sigin, poll_length = 0.05, timeout=500, tc=1e-3):
+        """! Poll a demodulator and record the data. Used to take spectra.
+        @param demod (int)
 
         Args:
             poll_length (float): how long to poll. Units: (s)
@@ -305,138 +328,6 @@ class ZurichLockin(Device):
         self.server.sync()
 
         return x, y, frame, line
-
-    def _poll_scope(self, channel):
-        """Poll the oscilloscope.  Not currently in use."""
-        try:
-            path = '/%s/scopes/0/wave' % (self._name)
-            self.server.subscribe(path)
-            self.server.sync()
-            poll_length = .05  # [s]
-            poll_timeout = 500  # [ms]
-            poll_flags = 0
-            poll_return_flat_dict = True
-            data = self.server.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
-            self._scope = data['/%s/scopes/%i/wave' % (self._name, channel)][0]['wave']
-        except Exception as e:
-            self.last_action = str(e)
-
-    # Oscilloscope module
-    ############################################################################
-    @property
-    def scope(self):
-        """Return the oscilloscope trace."""
-        return self._scope
-
-    @property
-    def scope_time(self):
-        return self._scope_time
-
-    @scope_time.setter
-    def scope_time(self, val):
-        try:
-            if val > 15:
-                scope_time = 15
-            else:
-                scope_time = val
-            clockbase = float(self.server.getInt('/%s/clockbase' % (self._name)))
-            self.server.set(['/%s/scopes/0/time' % (device), scope_time])
-            self.last_action = 'Oscilloscope time set to %i' % (val)
-            #desired_t_shot = 10./frequency
-            #scope_time = np.ceil(np.max([0, np.log2(clockbase*desired_t_shot/2048.)]))
-        except:
-            self.last_action = ''
-
-    # Parameter setting/getting
-    ############################################################################
-    # Property and setter functions for lockin time constant, modulation
-    # frequency and sampling rate
-
-    # Lockin time constant
-    @property
-    def tc(self):
-        """Property to return current demodulator time constant."""
-        return self._tc
-
-    @tc.setter
-    def tc(self, val):
-        """
-        Time constant setter.
-
-        Args:
-            val (float): demodulator time constant. Units (s)
-        """
-        self.server.setDouble('/%s/DEMODS/0/timeconstant' % (self._name), val)
-        self.server.sync()
-
-        self._tc = self.server.getDouble('/%s/DEMODS/0/timeconstant' % (self._name))
-        self.last_action = 'Lockin time constant set to %i' % (self._tc)
-
-    # Lockin oscillator frequency
-    @property
-    def freq(self):
-        """Property to return current oscillator frequency."""
-        return self._freq
-
-    @freq.setter
-    def freq(self, val):
-        """
-        Oscillator frequency setter.
-
-        Args:
-            val (float): oscillator frequency. Units (Hz)
-        """
-        self.server.setDouble('/%s/oscs/0/freq' % (self._name), val)
-        self.server.sync()
-
-        self._freq = self.server.getDouble('/%s/oscs/0/freq' % (self._name))
-        self.last_action = 'Oscillator frequency set to %i' % (self._freq)
-
-    # Lockin sampling rate
-    @property
-    def rate(self):
-        """Property to return current sampling rate of demodulated signal."""
-        return self._rate
-
-    @rate.setter
-    def rate(self, val):
-        """
-        Sampling rate setter.
-
-        Args:
-            val (float): sampling rate of demodulated signal. Units (Sa/s)
-        """
-        self.server.setDouble('/%s/DEMODS/0/rate' % (self._name), val)
-        self.server.sync()
-
-        self._rate = self.server.getDouble('/%s/DEMODS/0/rate' % (self._name))
-        self.last_action = 'Lockin sampling rate set to %i' % (self._rate)
-
-
-    ############################################################################
-    # Property and setter functions for signal input/outputs
-
-    # @property
-    # def sigin(self):
-    #     """Return current signal input channel.  Not in use."""
-    #     return self._sigin
-    #
-    # @sigin.setter
-    # def sigin(self, val):
-    #     """Set current signal input channel. Not in use."""
-    #     self._sigin = val
-    #     self.last_action = 'Signal input changed to channel %d.' % (val+1)
-    #
-    # @property
-    # def sigout(self):
-    #     """Return current signal output channel.  Not in use."""
-    #     return self._sigout
-    #
-    # @sigout.setter
-    # def sigout(self, val):
-    #     """Set current signal output channel. Not in use."""
-    #     self._sigout = val
-    #     self.last_action = 'Signal output changed to channel %d.' % (val+1)
 
     ############################################################################
     # API errors

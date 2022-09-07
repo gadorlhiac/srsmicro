@@ -1,1 +1,5 @@
 # Options
+## Oscillator frequencies
+$btn$ {Set Osc 0 Frequency} {freq_btn} {_set_freq0} & $form$ {freq0_set_box}
+$btn$ {Set Osc 1 Frequency} {freq_btn} {_set_freq1} & $form$ {freq1_set_box}
+## Filter settings

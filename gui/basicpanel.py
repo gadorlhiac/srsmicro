@@ -12,6 +12,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 import pyqtgraph as pg
 import numpy as np
 import re
+import time
 
 
 class BasicPanel(Dock):
@@ -210,7 +211,15 @@ class BasicPanel(Dock):
                             self.control_vars[dataname] = np.random.random([512, 512])
                             self.control_vars[varname].show()
                             self.control_vars[varname].setImage(self.control_vars[dataname])
-                            layout.addWidget(self.control_vars[varname], row, col, 1, 1)
+                            layout.addWidget(self.control_vars[varname], row, col, 1, -1)
+                        elif cmd == 'plot':
+                            varname = params[0]
+                            dataname = params[1]
+                            plot = pg.PlotWidget()
+                            self.control_vars[varname] = plot
+                            self.control_vars[dataname] = np.random.random([200])
+                            self.control_vars[varname].plot(self.control_vars[dataname], symbol = 'o')
+                            layout.addWidget(self.control_vars[varname], row, col, 1, -1)
                     col += 1
                 col = 0
                 row += 1
@@ -226,9 +235,9 @@ class BasicPanel(Dock):
         for param in params:
             if param in self.status_vars:
                 try:
-                    self.status_vars[param].setText('{:.3g}'.format(params[param]))
+                    self.status_vars[param].setText(f'{params[param]:.3g}')
                 except ValueError as err:
-                    self.status_vars[param].setText('{}'.format(params[param]))
+                    self.status_vars[param].setText(f'{params[param]}')
             else:
                 self._update_controls(param, params[param])
 
@@ -268,8 +277,12 @@ class BasicPanel(Dock):
         """! Slot to update the device log.
         @param msg Text to be added to the log.
         """
-        self._logs.insertPlainText('{}: {}\n'.format(time.asctime(time.localtime(time.time())),
-                                                    msg))
+        self._logs.insertPlainText(f'{self.current_time}: {msg}\n')
+
+    @property
+    def current_time(self):
+        """! Property to return current time. Useful for logging purposes."""
+        return time.asctime(time.localtime(time.time()))
 
     def _display_widget(self):
         pass

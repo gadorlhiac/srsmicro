@@ -137,4 +137,5 @@ class SerialDevice(Device):
     # On application close
     ############################################################################
     def exit(self):
+        print('........Closing serial communication port.\n')
         self.close()

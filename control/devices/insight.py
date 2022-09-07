@@ -7,6 +7,7 @@ Insight
 """
 
 from .serialdevice import SerialDevice
+from serial.serialutil import PortNotOpenError
 from PyQt5.QtCore import pyqtSignal as Signal
 
 class Insight(SerialDevice):
@@ -123,12 +124,16 @@ class Insight(SerialDevice):
             self._cond_vars['op_state'] = self._parse_op_state((resp >> 16))
             # self._history = self._read_history()
             # self._op_state = self._parse_op_state((resp >> 16))
-        except:
+        except PortNotOpenError:
             self._cond_vars['main_shutter'] = 0
             self._cond_vars['fixed_shutter'] = 0
             self._cond_vars['op_state'] = 'Ready to turn on'
             self._cond_vars['op_errors'] = 'Insight off'
             self._cond_vars['history'] = 'Insight off'
+            # self.log('Not connected to Insight.')
+            # self.cmd_result.emit('Not connected to Insight.')
+            # self.state.emit(f'{self.name}+Logs', 'Error querying state.')
+            # print('Not connected to Insight.')
 
     def _check_errors(self, state: str):
         self._cond_vars['op_errors'] = ''
@@ -160,7 +165,8 @@ class Insight(SerialDevice):
         except Exception as e:
             err = f'Error while reading history: {str(e)}'
             self._cond_vars['history'] = err
-            self.cmd_result.emit(err)
+            # self.cmd_result.emit(err)
+            # self.log(self._cond_vars['history'])
 
     # Current laser status
     def _parse_op_state(self, resp: int) -> str:
@@ -188,38 +194,45 @@ class Insight(SerialDevice):
 
     def _read_current_conditions(self):
         for cmd in self.cmds:
-            self.write(f'{self.cmds[cmd]}?', self.comtime)
-            self._cond_vars[cmd] = self.read().strip()
+            try:
+                self.write(f'{self.cmds[cmd]}?', self.comtime)
+                self._cond_vars[cmd] = self.read().strip()
+            except PortNotOpenError:
+                self._cond_vars[cmd] = '-'
+                # self.log('Not connected to Insight.')
+                # self.cmd_result.emit('Not connected to Insight.')
 
     def parse_cmd(self, param, val):
-        if param == 'op_state':
-            if val == 'RUN':
-                # self._cond_vars['op_state'] = 'RUN'
-                if self._cond_vars['op_state'] == 'RUN':
-                    self.write('OFF', self.comtime)
-                    self.cmd_result.emit('Turning laser off.')
+        try:
+            if param == 'op_state':
+                if val == 'RUN':
+                    # self._cond_vars['op_state'] = 'RUN'
+                    if self._cond_vars['op_state'] == 'RUN':
+                        self.write('OFF', self.comtime)
+                        self.cmd_result.emit('Turning laser off.')
+                    else:
+                        self.write('ON', self.comtime)
+                        self.cmd_result.emit('Turning laser on.')
+            elif param == 'main_shutter':
+                if self._cond_vars['main_shutter']:
+                    self.write(f'{self.cmds["main_shutter"]} 0', self.comtime)
                 else:
-                    self.write('ON', self.comtime)
-                    self.cmd_result.emit('Turning laser on.')
-        elif param == 'main_shutter':
-            if self._cond_vars['main_shutter']:
-                self.write(f'{self.cmds["main_shutter"]} 0', self.comtime)
-            else:
-                self.write(f'{self.cmds["main_shutter"]} 1', self.comtime)
-        elif param == 'fixed_shutter':
-            if self._cond_vars['fixed_shutter']:
-                self.write(f'{self.cmds["fixed_shutter"]} 0', self.comtime)
-            else:
-                self.write(f'{self.cmds["fixed_shutter"]} 1', self.comtime)
-        elif param == 'opo_wl':
-            self.write(f'{self.cmds["opo_wl"]}{val}', self.comtime)
-        elif param == 'align':
-            if self._cond_vars['align'] == 'RUN':
-                self.write(f'{self.cmds["align"]} ALIGN', self.comtime)
-            else:
-                self.write(f'{self.cmds["align"]} RUN', self.comtime)
-
-
+                    self.write(f'{self.cmds["main_shutter"]} 1', self.comtime)
+            elif param == 'fixed_shutter':
+                if self._cond_vars['fixed_shutter']:
+                    self.write(f'{self.cmds["fixed_shutter"]} 0', self.comtime)
+                else:
+                    self.write(f'{self.cmds["fixed_shutter"]} 1', self.comtime)
+            elif param == 'opo_wl':
+                self.write(f'{self.cmds["opo_wl"]}{val}', self.comtime)
+            elif param == 'align':
+                if self._cond_vars['align'] == 'RUN':
+                    self.write(f'{self.cmds["align"]} ALIGN', self.comtime)
+                else:
+                    self.write(f'{self.cmds["align"]} RUN', self.comtime)
+        except PortNotOpenError as err:
+            self.log('Not connected to Insight.')
+            self.cmd_result.emit('Not connected to Insight.')
     # @property
     # def cond_vars(self) -> dict:
     #     return self._cond_vars
@@ -231,7 +244,9 @@ class Insight(SerialDevice):
     ############################################################################
     def exit(self):
         if self._cond_vars['op_state'] == 'RUN':
+            print('........Insight entering hibernation state.')
             self.write('OFF', self.comtime)
         # if self._isconnected:
         #     self.write('OFF', self.comtime)
+        print('........Closing serial communication port.\n')
         self.close()

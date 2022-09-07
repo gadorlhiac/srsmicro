@@ -50,12 +50,13 @@ class MainController(QObject):
         # Instance of the Insight device for controlling the laser.
         self._insight = Insight(name='Insight')
         self.insight_cmd.connect(self._insight.parse_cmd)
-        # self._insight.cmd_result.connect(self.log)
+        self._insight.cmd_result.connect(self.log)
 
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
         self._delaystage = DelayStage(name='Delay Stage')
         self.delaystage_cmd.connect(self._delaystage.parse_cmd)
+        self._delaystage.cmd_result.connect(self.log)
 
         ## @var _zi
         # Instance of the ZurichLockin device for controlling the lock-in amplifier.
@@ -142,6 +143,7 @@ class MainController(QObject):
         # response from the device
         # Each device case is handled by separate function
         # Can't use match-case because computer running software is too old
+        self.log.emit(f'Attempting {device} command - {param}: {val}')
         self._reporter.pause = True
         if device == 'Global':
             resp = self.global_control(param, val)
@@ -159,7 +161,6 @@ class MainController(QObject):
         elif device == 'kcube':
             resp = 'Not configured yet'
 
-        self.log.emit(f'Attempting {device} command - {param}: {val}')
         # self.log.emit('Functionality not implemented. Request failed.')
         # mw.statusbar = resp
         self._reporter.pause = False
@@ -187,14 +188,14 @@ class MainController(QObject):
         errors as needed.
         """
         self.running = False
-        print('Shutting down controller')
-        print('....Exiting device status thread')
+        print('Shutting down query thread.')
+        print('....Exiting device status thread.\n')
         self._status_thread.quit()
         print('Closing devices connections....')
-        print('....Insight entering hibernation mode. Serial port closed.')
+        print('....Insight.')
         self._insight.exit()
-        print('....Delay stage serial port closed.')
+        print('....Delay stage.')
         self._delaystage.exit()
-        print('....ZI lock-in server connection closed.')
+        print('....ZI lock-in.')
         self._zi.exit()
         # print('....KCube connection closed.')

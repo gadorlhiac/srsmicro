@@ -14,6 +14,7 @@ from .insightpanel import InsightPanel
 from .delaystagepanel import DelayStagePanel
 from .zipanel import ZiPanel
 from .femtoramanpanel import FemtoRamanPanel
+from .spectrumpanel import SpectrumPanel
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
@@ -73,6 +74,10 @@ class MainWindow(QMainWindow):
     ## @var fssrs_logs
     # (Signal) Emit fsSRS experiment type specific logs.
     fssrs_logs: ClassVar[Signal] = Signal(object)
+
+    ## @var spec_logs
+    # (Signal) Emit spectrum acquisition specific logs.
+    spec_logs: ClassVar[Signal] = Signal(object)
 
     def __init__(self):
         """! The MainWindow constructor."""
@@ -159,7 +164,8 @@ class MainWindow(QMainWindow):
                                                    'ZI Controls',
                                                    # 'Kcube Controls',
                                                    # 'DMD Controls',
-                                                   'fsSRS'])
+                                                   'fsSRS',
+                                                   'Spectrum Acquisition'])
                                                    # 'Spectral Focusing',
                                                    # 'Compressed Sensing',
                                                    # 'Time-0 Calibration'])
@@ -264,6 +270,17 @@ class MainWindow(QMainWindow):
         self.data.connect(self._fssrs_panel.update_data)
         self.fssrs_logs.connect(self._fssrs_panel.update_log)
 
+        ## @var _spec_panel
+        # Contains GUI elements for collecting a scanned spectrum.
+        self._spec_panel = SpectrumPanel(hideTitle=True,
+                                         statpath='srsmicro/gui/format/spectrum_status.fmt',
+                                         ctrlpath='srsmicro/gui/format/spectrum_controls.ctrl')
+        self._spec_panel.expmt_msg.connect(self.update_log)
+        self._spec_panel.cmd.connect(self.cmd)
+        self.spec_logs.connect(self._spec_panel.update_log)
+        # self.data.connect(self._fssrs_panel.update_data)
+
+
     def _update_expmt(self, obj, param, val):
         """! Slot for updating the experiment type parameter. Only the final
         val parameter is used; however, the other two are needed to match the
@@ -276,7 +293,8 @@ class MainWindow(QMainWindow):
                    'Insight Controls' : self._insight_panel,
                    'Delay Stage Controls' : self._delaystage_panel,
                    'ZI Controls' : self._zi_panel,
-                   'fsSRS' : self._fssrs_panel }
+                   'fsSRS' : self._fssrs_panel,
+                   'Spectrum Acquisition' : self._spec_panel }
 
         self._current_panel.close()
         self._current_panel = panels[str(val)]
@@ -292,10 +310,19 @@ class MainWindow(QMainWindow):
         """
         if device == 'Insight':
             self.insight_state.emit(params)
+        elif device == 'Insight+Logs':
+            self.insight_logs.emit(params)
+
         elif device == 'Delay Stage':
             self.delaystage_state.emit(params)
+
+        elif device == 'Delay Stage+Logs':
+            self.delaystage_logs.emit(params)
         elif device == 'Lockin':
             self.zi_state.emit(params)
+            
+        elif device == 'Lockin+Logs':
+            self.zi_logs.emit(params)
 
     # Console tab and related options
     ############################################################################
