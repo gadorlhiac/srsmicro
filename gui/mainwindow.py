@@ -320,7 +320,7 @@ class MainWindow(QMainWindow):
             self.delaystage_logs.emit(params)
         elif device == 'Lockin':
             self.zi_state.emit(params)
-            
+
         elif device == 'Lockin+Logs':
             self.zi_logs.emit(params)
 

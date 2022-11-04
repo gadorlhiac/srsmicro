@@ -86,7 +86,7 @@ class DelayStage(SerialDevice):
             # defined in the class variable _pos_errors of the PositionerError.
             bin_repr = format(int(resp[3:7], 16), '0>16b')
             if '1' in bin_repr:
-                raise PoisionerError(bin_repr)
+                raise PositionerError(bin_repr)
 
             # self.cmd_result = 'Read state and checked for positioner errors.'
 
@@ -102,7 +102,7 @@ class DelayStage(SerialDevice):
 
         except Exception as e:
             # self.cmd_result = 'Error: {}'.format(str(e))
-            self.cmd_result.emit(f'Error: {str(err)}')
+            self.cmd_result.emit(f'Error: {str(e)}')
             pass
 
     def check_errors(self):

@@ -260,6 +260,16 @@ class ZurichLockin(Device):
     # DAQ management (Imaging)
     ############################################################################
     def start_daq(self):
+        """! Start the asynchronous DAQ thread for image acquisition.
+
+        The dataAcquistionModule available through the ZI API polls the data
+        stream asynchronously allowing other communication with the lockin to
+        continue. In turn the object (module) managing this thread is maintained
+        on a separate thread to allow continuous update of the image display without
+        blocking the GUI. If triggers have been properly configured, image data
+        will automatically be displayed on the GUI with no further input from
+        the user.
+        """
         self._daq_thread.started.connect(self._daq.start)
         self._daq_thread.start()
 
@@ -269,37 +279,31 @@ class ZurichLockin(Device):
     def _image_data(self, data):
         self.data.emit('Image', data)
 
-    # On application close
-    ############################################################################
-    def exit(self):
-        print('........Closing DAQ thread.')
-        try:
-            self._daq_thread.quit()
-            self._server.disconnect()
-        except AttributeError as err:
-            print('............DAQ never opened.')
-        finally:
-            print('')
-        print('........Closing ZI server.')
-        self.close()
-
-    # Polling without DAQ module
+    # Spectrum acquisition
     ############################################################################
     def _poll(self, demod: int, sigin, poll_length = 0.05, timeout=500, tc=1e-3):
-        """! Poll a demodulator and record the data. Used to take spectra.
-        @param demod (int)
-
-        Args:
-            poll_length (float): how long to poll. Units: (s)
-            timeout (int): timeout period for response from server. Units (ms)
-            tc (float): demodulator time constant with which to poll. Units (s)
-
-        Returns:
-            x (np array): demodulator x values over polling period.
-            y (np array): demodulator y values over polling period.
-            frame (np array): auxilary in 0 values.  Currently configured to olympus frame clock.
-            line (np array): auxilary in 1 values. Currently configured to olympus line clock.
+        """!
         """
+        # Create ZurichDaq object and the separate thread it runs on
+        # The ZurichDaq has a dataAcquisitionModule which also runs on an
+        # independent thread. This allows the ZurichDaq to do continuous
+        # polling of the dataAcquisitionModule while that in turn reads
+        # continuously from the physical device itself
+        self._daq_thread = QThread()
+        self._daq = ZurichDaq(self._server.dataAcquisitionModule(),
+                    self._devname, f'/{self._devname}/demods/0/sample')
+        self._daq.moveToThread(self._daq_thread)
+
+        # Connect _image_data for relaying information to controller and
+        # gui
+        self._daq.data.connect(self._image_data)
+
+        # Connect signal/slots for shutdown to thread signal/slots
+        # Thread shutdown occurs in the ZurichLockin exit routine below
+        self._daq.shutdown.connect(self._daq_thread.quit)
+        self._daq.shutdown.pconnect(self._daq.exit)
+        self._daq_thread.finished.connect(self._daq_thread.deleteLater)
+
         flat_dictionary_key = True
         path = '/%s/DEMODS/0' % (self._name)
 
@@ -329,8 +333,19 @@ class ZurichLockin(Device):
 
         return x, y, frame, line
 
+    # On application close
     ############################################################################
-    # API errors
+    def exit(self):
+        print('........Closing DAQ thread.')
+        try:
+            self._daq_thread.quit()
+            self._server.disconnect()
+        except AttributeError as err:
+            print('............DAQ never opened.')
+        finally:
+            print('')
+        print('........Closing ZI server.')
+        self.close()
 
     # Flag and API error management
     ############################################################################

@@ -1,4 +1,8 @@
-# Spectrum
-$form$ {start_pos_box} & $form$ {end_post_box} & $form$ {num_steps_box}
+# Unchirped Spectrum Acquisition
+Wavelength Start: & $form$ {wl_start_box} & Wavelength End: & $form$ {wl_end_box}
+$btn$ {Acquire} {_acquire_btn} {_acquire}
+
+# Spectral Focusing Spectrum Acquisition
+Delay Stage Start Position & $form$ {start_pos_box} & Delay Stage End Position: & $form$ {end_post_box} & Number of Steps: & $form$ {num_steps_box}
 $btn$ {Acquire} {_acquire_btn} {_acquire}
 $plot$ {spec_plot} {data}

@@ -50,13 +50,13 @@ class MainController(QObject):
         # Instance of the Insight device for controlling the laser.
         self._insight = Insight(name='Insight')
         self.insight_cmd.connect(self._insight.parse_cmd)
-        self._insight.cmd_result.connect(self.log)
+        # self._insight.cmd_result.connect(self.log)
 
         ## @var _delaystage
         # Instance of the DelayStage device for controlling the delay stage.
         self._delaystage = DelayStage(name='Delay Stage')
         self.delaystage_cmd.connect(self._delaystage.parse_cmd)
-        self._delaystage.cmd_result.connect(self.log)
+        # self._delaystage.cmd_result.connect(self.log)
 
         ## @var _zi
         # Instance of the ZurichLockin device for controlling the lock-in amplifier.

@@ -99,6 +99,7 @@ class Insight(SerialDevice):
         self._cond_vars['main_shutter'] = 0
         self._cond_vars['fixed_shutter'] = 0
         self._cond_vars['op_state'] = 'Ready to turn on'
+        self._first_check = True
         # self.name = name
 
     # Error checking
@@ -120,7 +121,9 @@ class Insight(SerialDevice):
 
             self._check_errors(resp)
             # self._cond_vars['history'] = self._read_history()
-            self._read_history()
+            if self._first_check:
+                self._read_history()
+                self._first_check = False
             self._cond_vars['op_state'] = self._parse_op_state((resp >> 16))
             # self._history = self._read_history()
             # self._op_state = self._parse_op_state((resp >> 16))
@@ -156,12 +159,13 @@ class Insight(SerialDevice):
         try:
             self.write('READ:AHIS?', self.comtime)
             codes = self.read().strip().split(' ')
-            history = ''
+            history = 'Read from history buffer.\n'
             for code in codes:
-                history += f'{code}: {self.fault_codes[code]}\n'
+                history += f'\t{code}: {self.fault_codes[code]}\n'
 
             self._cond_vars['history'] = history
             self.cmd_result.emit('Read from history buffer. Appended to logs.')
+            self.log(self._cond_vars['history'])
         except Exception as e:
             err = f'Error while reading history: {str(e)}'
             self._cond_vars['history'] = err
@@ -250,3 +254,12 @@ class Insight(SerialDevice):
         #     self.write('OFF', self.comtime)
         print('........Closing serial communication port.\n')
         self.close()
+
+    # On application opens
+    ############################################################################
+    def _open(self):
+        """! Overwritten serial port open function. Disables the software
+        watchdog on the insight, preventing laser shutdown in the event of a
+        communication due to Python errors."""
+        super()._open() # Call the SerialDevice opening function
+        self.write('TIMer:WATChdog 0 \n', self.comtime)

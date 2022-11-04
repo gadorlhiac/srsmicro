@@ -48,6 +48,6 @@ class FemtoRamanPanel(BasicPanel):
     # def _controls_widgets(self):
     #     pass
     #
-    # def update_data(self, data):
-    #     self.data = data
-    #     self.imv.setImage(self.data)
+    def update_data(self, data):
+        self.data = data
+        self.control_vars['imv'].setImage(self.data)

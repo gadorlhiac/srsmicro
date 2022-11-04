@@ -171,14 +171,14 @@ class BasicPanel(Dock):
                 for object in s:
                     if re.search(self.h1_patn, object):
                         text = re.search(self.h1_patn, object).group()
-                        label = QLabel('{}'.format(text))
+                        label = QLabel(f'{text}')
                         label.setAlignment(Qt.AlignCenter)
                         label.setFont(self.h1font)
                         layout.addWidget(label, row, col, 1, -1)
                         row += 1
                     elif re.search(self.h2_patn, object):
                         text = re.search(self.h2_patn, object).group()
-                        label = QLabel('{}'.format(text))
+                        label = QLabel(f'{text}')
                         label.setAlignment(Qt.AlignCenter)
                         label.setFont(self.h2font)
                         layout.addWidget(label, row, col, 1, -1)
@@ -220,6 +220,10 @@ class BasicPanel(Dock):
                             self.control_vars[dataname] = np.random.random([200])
                             self.control_vars[varname].plot(self.control_vars[dataname], symbol = 'o')
                             layout.addWidget(self.control_vars[varname], row, col, 1, -1)
+                    else:
+                        label = QLabel(f'{object}')
+                        label.setAlignment(Qt.AlignLeft)
+                        layout.addWidget(label, row, col, 1, 1)
                     col += 1
                 col = 0
                 row += 1
